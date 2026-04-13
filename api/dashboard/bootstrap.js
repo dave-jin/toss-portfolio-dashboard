@@ -1,6 +1,3 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { fetchAssetProfiles, fetchJournalEntries, fetchTrades } from '../../lib/supabase.js';
 import { readSession } from '../../lib/session.js';
 
@@ -9,14 +6,13 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-async function readJson(relativePath, fallback) {
-  const target = path.resolve(__dirname, relativePath);
+async function readRemoteJson(req, assetPath, fallback) {
   try {
-    const raw = await fs.readFile(target, 'utf8');
-    return JSON.parse(raw);
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const res = await fetch(`${proto}://${host}${assetPath}`, { cache: 'no-store' });
+    if (!res.ok) return fallback;
+    return await res.json();
   } catch {
     return fallback;
   }
@@ -60,9 +56,9 @@ export default async function handler(req, res) {
     const session = readSession(req);
     if (!session) return json(res, 401, { ok: false, error: 'unauthorized' });
 
-    const latest = await readJson('../../public/data/latest.json', {});
-    const history = await readJson('../../public/data/history.json', []);
-    const context = await readJson('../../data/investment_context.json', {});
+    const latest = await readRemoteJson(req, '/data/latest.json', {});
+    const history = await readRemoteJson(req, '/data/history.json', []);
+    const meta = await readRemoteJson(req, '/data/dashboard_meta.json', {});
     const [profiles, trades, journals] = await Promise.all([
       fetchAssetProfiles(),
       fetchTrades(),
@@ -73,12 +69,12 @@ export default async function handler(req, res) {
       ok: true,
       latest,
       history,
-      project: context.project || {},
-      investorProfile: context.investor_profile || {},
-      redTeamProtocol: context.red_team_protocol || [],
-      sellChecklist: context.sell_checklist || [],
-      currentWatchpoints: context.current_watchpoints || [],
-      assetProfiles: mergeProfiles(context.positions || {}, profiles, latest.positions || []),
+      project: meta.project || {},
+      investorProfile: meta.investor_profile || {},
+      redTeamProtocol: meta.red_team_protocol || [],
+      sellChecklist: meta.sell_checklist || [],
+      currentWatchpoints: meta.current_watchpoints || [],
+      assetProfiles: mergeProfiles({}, profiles, latest.positions || []),
       trades,
       journals,
       appTabs: [

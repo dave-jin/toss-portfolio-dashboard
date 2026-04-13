@@ -14,6 +14,7 @@ public_dir = repo_root / 'public'
 data_dir = public_dir / 'data'
 data_dir.mkdir(parents=True, exist_ok=True)
 
+
 def parse_env(path: Path):
     env = {}
     if not path.exists():
@@ -29,11 +30,13 @@ def parse_env(path: Path):
         env[key.strip()] = value
     return env
 
+
 def run_json(cmd):
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         raise RuntimeError((proc.stderr or proc.stdout).strip() or f'command failed: {cmd}')
     return json.loads(proc.stdout)
+
 
 def supabase_config():
     env = parse_env(repo_root / '.env.vercel.production')
@@ -47,6 +50,7 @@ def supabase_config():
         'key': key,
         'schema': schema,
     }
+
 
 def request_supabase(method, path, params=None, body=None, headers=None):
     config = supabase_config()
@@ -68,6 +72,7 @@ def request_supabase(method, path, params=None, body=None, headers=None):
         data = res.read().decode()
         return json.loads(data) if data else None
 
+
 def load_sources():
     latest_json_src = report_src / 'latest.json'
     latest_md_src = report_src / 'latest.md'
@@ -79,11 +84,21 @@ def load_sources():
     context = json.loads(context_src.read_text(encoding='utf-8'))
     return latest_json_src, latest_md_src, context_src, latest, context
 
+
 def write_public_files(latest_json_src, latest_md_src, latest, context):
     latest_public = copy.deepcopy(latest)
     latest_public.pop('investment_context', None)
     (data_dir / 'latest.json').write_text(json.dumps(latest_public, ensure_ascii=False, indent=2), encoding='utf-8')
     shutil.copy2(latest_md_src, data_dir / 'latest.md')
+
+    dashboard_meta = {
+        'project': context.get('project', {}),
+        'investor_profile': context.get('investor_profile', {}),
+        'red_team_protocol': context.get('red_team_protocol', []),
+        'sell_checklist': context.get('sell_checklist', []),
+        'current_watchpoints': context.get('current_watchpoints', []),
+    }
+    (data_dir / 'dashboard_meta.json').write_text(json.dumps(dashboard_meta, ensure_ascii=False, indent=2), encoding='utf-8')
 
     history_path = data_dir / 'history.json'
     if history_path.exists():
@@ -141,10 +156,11 @@ def write_public_files(latest_json_src, latest_md_src, latest, context):
         'synced_at': datetime.now().astimezone().isoformat(timespec='seconds'),
         'report_source': str(report_src),
         'public_dir': str(public_dir),
-        'data_files': ['latest.json', 'latest.md', 'history.json'],
+        'data_files': ['latest.json', 'latest.md', 'history.json', 'dashboard_meta.json'],
     }
     (public_dir / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
     return manifest
+
 
 def guess_tab_key(symbol, market_type, profile):
     role = (profile.get('role') or '').lower()
@@ -165,6 +181,7 @@ def guess_tab_key(symbol, market_type, profile):
         return 'theme'
     return 'watchlist'
 
+
 def load_existing_profiles():
     try:
         rows = request_supabase('GET', 'dashboard_asset_profiles', params={'select': '*', 'limit': 500}) or []
@@ -172,12 +189,14 @@ def load_existing_profiles():
     except Exception:
         return {}
 
+
 def load_existing_trades():
     try:
         rows = request_supabase('GET', 'dashboard_trade_history', params={'select': 'trade_id,trade_note', 'limit': 500}) or []
         return {row['trade_id']: row for row in rows}
     except Exception:
         return {}
+
 
 def find_context_trade_note(order, context_positions):
     side = str(order.get('side') or '').lower()
@@ -197,6 +216,7 @@ def find_context_trade_note(order, context_positions):
         if same_date and same_qty and same_price:
             return item.get('note') or ''
     return ''
+
 
 def sync_supabase(latest, context):
     config = supabase_config()
@@ -276,6 +296,7 @@ def sync_supabase(latest, context):
         'trade_rows': len(trade_rows),
     }
 
+
 def main():
     latest_json_src, latest_md_src, context_src, latest, context = load_sources()
     manifest = write_public_files(latest_json_src, latest_md_src, latest, context)
@@ -287,6 +308,7 @@ def main():
         'synced_at': manifest['synced_at'],
         'supabase': supabase_result,
     }, ensure_ascii=False))
+
 
 if __name__ == '__main__':
     main()
