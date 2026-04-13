@@ -1,53 +1,163 @@
 <!doctype html>
-<html lang='ko'>
+<html lang="ko">
 <head>
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, max-snippet:0, max-image-preview:none, max-video-preview:0">
-<meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-<meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-<meta name="ai" content="noindex, nofollow">
-
-<meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-<title>Toss Portfolio Dashboard</title>
-<style>
-body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; margin: 0; background: #0b1020; color: #eef2ff; }
-.wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.card { background: #121933; border: 1px solid #273056; border-radius: 16px; padding: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.18); }
-h1,h2 { margin: 0 0 12px; }
-.small { color: #a8b3cf; font-size: 14px; }
-.metric { font-size: 28px; font-weight: 700; margin-top: 8px; }
-.pos { color: #8cf29a; } .neg { color: #ff9b9b; }
-.table { width: 100%; border-collapse: collapse; background: #121933; border-radius: 16px; overflow: hidden; }
-.table th, .table td { padding: 12px 10px; border-bottom: 1px solid #273056; text-align: left; font-size: 14px; }
-.table th { color: #a8b3cf; font-weight: 600; }
-ul { margin: 0; padding-left: 20px; line-height: 1.6; }
-.footer { margin-top: 28px; color: #90a0c0; font-size: 13px; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rich Dad Project Dashboard</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, max-snippet:0, max-image-preview:none, max-video-preview:0">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="ai" content="noindex, nofollow">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class='wrap'>
-  <h1>Toss Portfolio Dashboard</h1>
-  <div class='small'>생성 시각: 2026-04-13T13:25:43+09:00</div>
-  <div class='grid'>
-    <div class='card'><div class='small'>총자산</div><div class='metric'>3,592,524원</div></div>
-    <div class='card'><div class='small'>평가손익</div><div class='metric pos'>+188,635원</div><div class='small'>+5.69%</div></div>
-    <div class='card'><div class='small'>국내 / 미국 자산</div><div class='metric'>2,999,009원</div><div class='small'>593,515원</div></div>
-    <div class='card'><div class='small'>비중 1위 / 상위3 비중</div><div class='metric'>SK하이닉스 / 29.4%</div><div class='small'>77.3%</div></div>
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card glass">
+      <div class="eyebrow">Private Dashboard</div>
+      <h1>Rich Dad Project</h1>
+      <p class="muted">이 페이지는 데이브의 개인 투자 운영 대시보드야. 첫 로그인 시 비밀번호를 반드시 바꿔줘.</p>
+      <form id="login-form" class="stack gap-16">
+        <input id="password-input" class="input" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
+        <button class="btn primary" type="submit">대시보드 열기</button>
+      </form>
+      <div id="login-error" class="error"></div>
+      <div class="footnote">초기 비밀번호는 12345로 설정되어 있어. 첫 로그인 뒤 바로 변경이 필요해.</div>
+    </div>
   </div>
-  <div class='grid'>
-    <div class='card'><h2>핵심 해석</h2><ul><li>계좌 전체는 이미 준수한 수익 구간입니다. 오늘의 등락보다 포지션 구조와 집중도 관리가 더 중요해 보입니다.</li><li>손실 종목 중에는 삼성전자(-22,000원), 수익 기여 종목 중에는 SK하이닉스(+123,000원)가 가장 큽니다. 개선 행동은 &#x27;무엇을 더 살까&#x27;보다 &#x27;무엇을 유지/축소할까&#x27; 관점으로 보는 게 좋습니다.</li><li>당일 하락 종목이 여러 개 있어도 계좌 전체는 여전히 평가이익 상태입니다. 단기 흔들림에 반응해 구조를 망가뜨리지 않는 쪽이 더 좋아 보입니다.</li><li>미국 포지션 중 비중이 매우 작은 종목이 있습니다. 학습용 포지션인지, 장기 전략 포지션인지 기준을 분리해두면 의사결정이 더 선명해집니다.</li></ul></div>
-    <div class='card'><h2>주의할 점</h2><ul><li>상위 3개 종목 비중이 77.3%입니다. 수익이 날 때는 좋아 보이지만, 변동성도 함께 커질 수 있습니다.</li><li>대기 현금이 많지 않아 새 기회가 와도 즉시 대응할 선택지가 제한됩니다. 신규 매수보다 리밸런싱 우선순위를 먼저 보는 편이 낫습니다.</li></ul></div>
-    <div class='card'><h2>다음 행동</h2><ul><li>신규 아이디어를 더 담기 전에 기존 보유 종목 중 축소/정리 후보 1개만 먼저 검토하기</li><li>이번 주에는 매매 아이디어보다 포트폴리오 원칙 문장 1개를 업데이트하기</li></ul></div>
+
+  <div id="password-reset-modal" class="modal hidden">
+    <div class="modal-card glass">
+      <div class="eyebrow">First Login</div>
+      <h2>비밀번호 변경이 필요해</h2>
+      <p class="muted">현재는 초기 비밀번호가 설정되어 있어. 계속 진행하려면 새 비밀번호를 저장해줘.</p>
+      <form id="force-reset-form" class="stack gap-12">
+        <input id="force-new-password" class="input" type="password" placeholder="새 비밀번호">
+        <input id="force-confirm-password" class="input" type="password" placeholder="새 비밀번호 확인">
+        <button class="btn primary" type="submit">새 비밀번호 저장</button>
+      </form>
+      <div id="force-reset-error" class="error"></div>
+    </div>
   </div>
-  <div class='card'>
-    <h2>보유 종목</h2>
-    <table class='table'>
-      <thead><tr><th>종목</th><th>시장</th><th>비중</th><th>평가금액</th><th>평가손익</th><th>수익률</th><th>당일손익</th></tr></thead>
-      <tbody><tr><td>SK하이닉스</td><td>KR_STOCK</td><td>29.4%</td><td>1,029,000원</td><td>+123,000원</td><td>+13.57%</td><td>+2,000원</td></tr><tr><td>KODEX 200</td><td>KR_STOCK</td><td>25.0%</td><td>875,100원</td><td>+61,825원</td><td>+7.60%</td><td>-11,450원</td></tr><tr><td>삼성전자</td><td>KR_STOCK</td><td>22.9%</td><td>802,000원</td><td>-22,000원</td><td>-2.66%</td><td>-22,000원</td></tr><tr><td>VOO</td><td>US_STOCK</td><td>9.4%</td><td>329,559원</td><td>+5,770원</td><td>+1.78%</td><td>-2,499원</td></tr><tr><td>XLE</td><td>US_STOCK</td><td>6.7%</td><td>234,198원</td><td>+9,224원</td><td>+4.09%</td><td>+6,401원</td></tr><tr><td>TIGER K방산&amp;우주</td><td>KR_STOCK</td><td>2.9%</td><td>101,250원</td><td>+13,660원</td><td>+15.59%</td><td>+150원</td></tr><tr><td>TIGER 미국배당다우존스</td><td>KR_STOCK</td><td>2.9%</td><td>101,080원</td><td>-2,030원</td><td>-1.96%</td><td>-875원</td></tr><tr><td>GLD</td><td>US_STOCK</td><td>0.8%</td><td>27,569원</td><td>-1,789원</td><td>-6.09%</td><td>-260원</td></tr></tbody>
-    </table>
+
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <h2>보안 설정</h2>
+        <button id="settings-close" class="icon-btn" type="button">✕</button>
+      </div>
+      <form id="settings-form" class="stack gap-12">
+        <input id="current-password" class="input" type="password" placeholder="현재 비밀번호">
+        <input id="new-password" class="input" type="password" placeholder="새 비밀번호">
+        <input id="confirm-password" class="input" type="password" placeholder="새 비밀번호 확인">
+        <button class="btn primary" type="submit">비밀번호 변경</button>
+      </form>
+      <div id="settings-error" class="error"></div>
+      <div id="settings-success" class="success"></div>
+      <div class="footnote">비밀번호는 현재 브라우저의 로컬 저장소에 저장돼. 진짜 보안이 아니라 개인용 잠금장치에 가까워.</div>
+    </div>
   </div>
-  <div class='footer'>투자 자문이 아니라 읽기 전용 데이터 기반 점검 리포트입니다. 세션이 만료되면 재로그인이 필요합니다.</div>
-</div>
+
+  <main id="app" class="app hidden">
+    <section class="hero-shell">
+      <div class="hero-bg"></div>
+      <div class="container hero-content">
+        <div class="hero-main glass">
+          <div class="eyebrow">부자 아빠 프로젝트 · Life CFO Dashboard</div>
+          <div class="hero-topline">
+            <div>
+              <h1>오늘의 포트폴리오 판단</h1>
+              <p id="hero-subtitle" class="muted"></p>
+            </div>
+            <div class="hero-actions">
+              <a id="dashboard-link" class="btn ghost" href="#positions">보유 종목 보기</a>
+              <button id="open-settings" class="btn ghost" type="button">보안 설정</button>
+            </div>
+          </div>
+          <div id="headline-grid" class="headline-grid"></div>
+          <div class="notice-row">
+            <div class="notice warning"><strong>중요</strong><span id="security-note">이 페이지는 private 운영 대시보드야. 링크 공유는 금지.</span></div>
+            <div class="notice"><strong>원칙</strong><span id="project-goal"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section" id="today-actions">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Morning Brief</div>
+          <h2>지금 가장 먼저 볼 것</h2>
+        </div>
+      </div>
+      <div id="action-grid" class="action-grid"></div>
+    </section>
+
+    <section class="container section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Strategy Radar</div>
+          <h2>오늘의 경고와 체크포인트</h2>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="glass panel">
+          <h3>레드팀 질문</h3>
+          <ul id="red-team-list" class="bullet-list"></ul>
+        </div>
+        <div class="glass panel">
+          <h3>활성 체크포인트</h3>
+          <ul id="watchpoint-list" class="bullet-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section" id="positions">
+      <div class="section-head sticky-head">
+        <div>
+          <div class="eyebrow">Portfolio Cards</div>
+          <h2>왜 샀는지 · 언제 팔지 · 지금 뭘 할지</h2>
+        </div>
+      </div>
+      <div id="positions-grid" class="positions-grid"></div>
+    </section>
+
+    <section class="container section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Timeline</div>
+          <h2>결정 히스토리</h2>
+        </div>
+      </div>
+      <div id="timeline" class="timeline"></div>
+    </section>
+
+    <section class="container section">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Operating System</div>
+          <h2>원칙과 매도 체크리스트</h2>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="glass panel">
+          <h3>핵심 원칙</h3>
+          <ul id="principles-list" class="bullet-list"></ul>
+        </div>
+        <div class="glass panel">
+          <h3>매도 체크리스트</h3>
+          <ol id="sell-checklist" class="bullet-list ordered"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="container section footer-section">
+      <div class="glass footer-panel">
+        <div class="eyebrow">Dashboard Meta</div>
+        <div id="footer-meta" class="footer-meta"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
 </body>
 </html>

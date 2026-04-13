@@ -1,11 +1,11 @@
 {
-  "synced_at": "2026-04-13T13:25:43+09:00",
-  "source_dir": "/Users/dave/.hermes/reports/toss",
-  "files": [
-    "index.html",
+  "synced_at": "2026-04-13T13:43:10+09:00",
+  "report_source": "/Users/dave/.hermes/reports/toss",
+  "public_dir": "/Users/dave/projects/toss-portfolio-dashboard/public",
+  "data_files": [
     "latest.json",
     "latest.md",
-    "robots.txt",
-    "llms.txt"
+    "investment_context.json",
+    "history.json"
   ]
 }

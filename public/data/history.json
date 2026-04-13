@@ -1,0 +1,148 @@
+[
+  {
+    "date": "2026-04-01",
+    "note": "사용자 제공 스냅샷",
+    "positions": [
+      {
+        "symbol": "A069500",
+        "name": "KODEX 200",
+        "market_value": 806500,
+        "profit_rate": -0.008,
+        "quantity": 10
+      },
+      {
+        "symbol": "A000660",
+        "name": "SK하이닉스",
+        "market_value": 875246,
+        "profit_rate": -0.033,
+        "quantity": 1
+      },
+      {
+        "symbol": "A463250",
+        "name": "TIGER K방산&우주",
+        "market_value": 92550,
+        "profit_rate": 0.056,
+        "quantity": 2
+      },
+      {
+        "symbol": "A458730",
+        "name": "TIGER 미국배당다우존스",
+        "market_value": 102935,
+        "profit_rate": -0.001,
+        "quantity": 7
+      },
+      {
+        "symbol": "GLD",
+        "name": "GLD",
+        "market_value": 28262,
+        "profit_rate": -0.037,
+        "quantity": 0.043
+      },
+      {
+        "symbol": "VOO",
+        "name": "VOO",
+        "market_value": 328419,
+        "profit_rate": 0.014,
+        "quantity": 0.359
+      },
+      {
+        "symbol": "XLE",
+        "name": "XLE",
+        "market_value": 251970,
+        "profit_rate": 0.119,
+        "quantity": 2.703
+      }
+    ]
+  },
+  {
+    "date": "2026-04-13T13:43:10+09:00",
+    "note": "자동 수집 스냅샷",
+    "summary": {
+      "total_asset": 3677235.0,
+      "profit": 187845.0,
+      "profit_rate": 0.0538
+    },
+    "positions": [
+      {
+        "symbol": "A069500",
+        "name": "KODEX 200",
+        "market_value": 1049100,
+        "profit_rate": 0.0614,
+        "quantity": 12,
+        "current_price": 87425,
+        "profit": 60695,
+        "daily_profit_loss": -14760
+      },
+      {
+        "symbol": "A000660",
+        "name": "SK하이닉스",
+        "market_value": 1029000,
+        "profit_rate": 0.1357,
+        "quantity": 1,
+        "current_price": 1029000,
+        "profit": 123000,
+        "daily_profit_loss": 2000
+      },
+      {
+        "symbol": "A005930",
+        "name": "삼성전자",
+        "market_value": 804000,
+        "profit_rate": -0.0242,
+        "quantity": 4,
+        "current_price": 201000,
+        "profit": -20000,
+        "daily_profit_loss": -20000
+      },
+      {
+        "symbol": "VOO",
+        "name": "VOO",
+        "market_value": 329617.744089,
+        "profit_rate": 0.018,
+        "quantity": 0.35926,
+        "current_price": 917490,
+        "profit": 5828.744089,
+        "daily_profit_loss": -2440.1952
+      },
+      {
+        "symbol": "XLE",
+        "name": "XLE",
+        "market_value": 234237.517657,
+        "profit_rate": 0.0411,
+        "quantity": 2.703501,
+        "current_price": 86642,
+        "profit": 9263.517657,
+        "daily_profit_loss": 6441.0316
+      },
+      {
+        "symbol": "A458730",
+        "name": "TIGER 미국배당다우존스",
+        "market_value": 101115,
+        "profit_rate": -0.0193,
+        "quantity": 7,
+        "current_price": 14445,
+        "profit": -1995,
+        "daily_profit_loss": -840
+      },
+      {
+        "symbol": "A463250",
+        "name": "TIGER K방산&우주",
+        "market_value": 100850,
+        "profit_rate": 0.1513,
+        "quantity": 2,
+        "current_price": 50425,
+        "profit": 13260,
+        "daily_profit_loss": -250
+      },
+      {
+        "symbol": "GLD",
+        "name": "GLD",
+        "market_value": 27584.950764,
+        "profit_rate": -0.0603,
+        "quantity": 0.043021,
+        "current_price": 641197,
+        "profit": -1773.049236,
+        "daily_profit_loss": -243.8272
+      }
+    ]
+  }
+]
