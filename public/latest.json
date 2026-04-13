@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-13T13:24:33+09:00",
+  "generated_at": "2026-04-13T13:25:43+09:00",
   "summary": {
-    "total_asset_amount": 3591952,
-    "evaluated_profit_amount": 188063,
-    "profit_rate": 0.0567,
+    "total_asset_amount": 3592524,
+    "evaluated_profit_amount": 188635,
+    "profit_rate": 0.0569,
     "orderable_amount_krw": 89629,
     "orderable_amount_usd": 1.45,
     "withdrawable_kr": {
@@ -51,22 +51,22 @@
       "kr": {
         "market": "kr",
         "pending_buy_order_amount": 0,
-        "evaluated_amount": 2909000,
+        "evaluated_amount": 2909380,
         "principal_amount": 2733975,
-        "evaluated_profit_amount": 175025,
-        "profit_rate": 0.064,
-        "total_asset_amount": 2998629,
+        "evaluated_profit_amount": 175405,
+        "profit_rate": 0.0641,
+        "total_asset_amount": 2999009,
         "orderable_amount_krw": 89629,
         "orderable_amount_usd": 0
       },
       "us": {
         "market": "us",
         "pending_buy_order_amount": 0,
-        "evaluated_amount": 591178,
+        "evaluated_amount": 591370,
         "principal_amount": 578140,
-        "evaluated_profit_amount": 13038,
-        "profit_rate": 0.0225,
-        "total_asset_amount": 593323,
+        "evaluated_profit_amount": 13230,
+        "profit_rate": 0.0228,
+        "total_asset_amount": 593515,
         "orderable_amount_krw": 2145,
         "orderable_amount_usd": 1.45
       },
@@ -103,15 +103,15 @@
       "market_code": "KSP",
       "quantity": 1,
       "average_price": 906000,
-      "current_price": 1030000,
-      "market_value": 1030000,
-      "unrealized_pnl": 124000,
-      "profit_rate": 0.1368,
-      "daily_profit_loss": 3000,
-      "daily_profit_rate": 0.0033,
-      "_weight": 0.29427452207521715,
-      "_profit": 124000.0,
-      "_daily": 3000.0
+      "current_price": 1029000,
+      "market_value": 1029000,
+      "unrealized_pnl": 123000,
+      "profit_rate": 0.1357,
+      "daily_profit_loss": 2000,
+      "daily_profit_rate": 0.0022,
+      "_weight": 0.2940205133190239,
+      "_profit": 123000.0,
+      "_daily": 2000.0
     },
     {
       "product_code": "A069500",
@@ -121,15 +121,15 @@
       "market_code": "KSP",
       "quantity": 10,
       "average_price": 81327,
-      "current_price": 87470,
-      "market_value": 874700,
-      "unrealized_pnl": 61425,
-      "profit_rate": 0.0755,
-      "daily_profit_loss": -11850,
-      "daily_profit_rate": -0.0145,
-      "_weight": 0.24990478102834218,
-      "_profit": 61425.0,
-      "_daily": -11850.0
+      "current_price": 87510,
+      "market_value": 875100,
+      "unrealized_pnl": 61825,
+      "profit_rate": 0.076,
+      "daily_profit_loss": -11450,
+      "daily_profit_rate": -0.014,
+      "_weight": 0.25004601672058097,
+      "_profit": 61825.0,
+      "_daily": -11450.0
     },
     {
       "product_code": "A005930",
@@ -145,7 +145,7 @@
       "profit_rate": -0.0266,
       "daily_profit_loss": -22000,
       "daily_profit_rate": -0.0266,
-      "_weight": 0.22913414243138266,
+      "_weight": 0.22915884517187285,
       "_profit": -22000.0,
       "_daily": -22000.0
     },
@@ -157,22 +157,22 @@
       "market_code": "AMX",
       "quantity": 0.35926,
       "average_price": 901266,
-      "current_price": 917194,
-      "market_value": 329511.417499,
-      "unrealized_pnl": 5722.417499,
-      "profit_rate": 0.0176,
-      "daily_profit_loss": -2546.5218,
-      "daily_profit_rate": -0.0078,
+      "current_price": 917328,
+      "market_value": 329559.264465,
+      "unrealized_pnl": 5770.264465,
+      "profit_rate": 0.0178,
+      "daily_profit_loss": -2498.6748,
+      "daily_profit_rate": -0.0077,
       "average_price_usd": 611.060218,
-      "current_price_usd": 619.81,
-      "market_value_usd": 222.67294,
-      "unrealized_pnl_usd": 3.143446,
-      "profit_rate_usd": 0.0143,
-      "daily_profit_loss_usd": -1.7208,
-      "daily_profit_rate_usd": -0.0078,
-      "_weight": 0.09414253874062675,
-      "_profit": 5722.417499,
-      "_daily": -2546.5218
+      "current_price_usd": 619.9,
+      "market_value_usd": 222.705274,
+      "unrealized_pnl_usd": 3.17578,
+      "profit_rate_usd": 0.0144,
+      "daily_profit_loss_usd": -1.6885,
+      "daily_profit_rate_usd": -0.0076,
+      "_weight": 0.09416635967642299,
+      "_profit": 5770.264465,
+      "_daily": -2498.6748
     },
     {
       "product_code": "US19981222002",
@@ -182,22 +182,22 @@
       "market_code": "AMX",
       "quantity": 2.703501,
       "average_price": 83215,
-      "current_price": 86583,
-      "market_value": 234077.492026,
-      "unrealized_pnl": 9103.492026,
-      "profit_rate": 0.0404,
-      "daily_profit_loss": 6281.006,
-      "daily_profit_rate": 0.0279,
+      "current_price": 86627,
+      "market_value": 234197.511249,
+      "unrealized_pnl": 9223.511249,
+      "profit_rate": 0.0409,
+      "daily_profit_loss": 6401.0252,
+      "daily_profit_rate": 0.0284,
       "average_price_usd": 56.83,
-      "current_price_usd": 58.51,
-      "market_value_usd": 158.181843,
-      "unrealized_pnl_usd": 4.541881,
-      "profit_rate_usd": 0.0295,
-      "daily_profit_loss_usd": 4.2444,
-      "daily_profit_rate_usd": 0.0276,
-      "_weight": 0.06687673989758894,
-      "_profit": 9103.492026,
-      "_daily": 6281.006
+      "current_price_usd": 58.54,
+      "market_value_usd": 158.262948,
+      "unrealized_pnl_usd": 4.622986,
+      "profit_rate_usd": 0.03,
+      "daily_profit_loss_usd": 4.3256,
+      "daily_profit_rate_usd": 0.0281,
+      "_weight": 0.06691824341639345,
+      "_profit": 9223.511249,
+      "_daily": 6401.0252
     },
     {
       "product_code": "A463250",
@@ -207,15 +207,15 @@
       "market_code": "KSP",
       "quantity": 2,
       "average_price": 43795,
-      "current_price": 50610,
-      "market_value": 101220,
-      "unrealized_pnl": 13630,
-      "profit_rate": 0.1556,
-      "daily_profit_loss": 120,
-      "daily_profit_rate": 0.0013,
-      "_weight": 0.028918900120828622,
-      "_profit": 13630.0,
-      "_daily": 120.0
+      "current_price": 50625,
+      "market_value": 101250,
+      "unrealized_pnl": 13660,
+      "profit_rate": 0.1559,
+      "daily_profit_loss": 150,
+      "daily_profit_rate": 0.0017,
+      "_weight": 0.028930589867396668,
+      "_profit": 13660.0,
+      "_daily": 150.0
     },
     {
       "product_code": "A458730",
@@ -231,7 +231,7 @@
       "profit_rate": -0.0196,
       "daily_profit_loss": -875,
       "daily_profit_rate": -0.0084,
-      "_weight": 0.02887890164209995,
+      "_weight": 0.02888201504984153,
       "_profit": -2030.0,
       "_daily": -875.0
     },
@@ -243,32 +243,32 @@
       "market_code": "AMX",
       "quantity": 0.043021,
       "average_price": 682410,
-      "current_price": 640250,
-      "market_value": 27544.206779,
-      "unrealized_pnl": -1813.793221,
-      "profit_rate": -0.0617,
-      "daily_profit_loss": -284.5712,
-      "daily_profit_rate": -0.0096,
+      "current_price": 640827,
+      "market_value": 27569.035145,
+      "unrealized_pnl": -1788.964855,
+      "profit_rate": -0.0609,
+      "daily_profit_loss": -259.7429,
+      "daily_profit_rate": -0.0088,
       "average_price_usd": 461.159991,
-      "current_price_usd": 432.66,
-      "market_value_usd": 18.613465,
-      "unrealized_pnl_usd": -1.226099,
-      "profit_rate_usd": -0.0618,
-      "daily_profit_loss_usd": -0.1923,
-      "daily_profit_rate_usd": -0.0096,
-      "_weight": 0.007869474063913768,
-      "_profit": -1813.793221,
-      "_daily": -284.5712
+      "current_price_usd": 433.05,
+      "market_value_usd": 18.630244,
+      "unrealized_pnl_usd": -1.20932,
+      "profit_rate_usd": -0.0609,
+      "daily_profit_loss_usd": -0.1755,
+      "daily_profit_rate_usd": -0.0088,
+      "_weight": 0.007877416778467553,
+      "_profit": -1788.964855,
+      "_daily": -259.7429
     }
   ],
   "metrics": {
-    "equity_total": 3500133.116304,
+    "equity_total": 3499755.8108590003,
     "position_count": 8,
-    "top3_weight": 0.773313445534942,
+    "top3_weight": 0.7732253752114777,
     "top1": {
       "name": "SK하이닉스",
-      "weight": 0.29427452207521715,
-      "market_value": 1030000
+      "weight": 0.2940205133190239,
+      "market_value": 1029000
     },
     "cash_krw": 89629.0,
     "cash_usd": 1.45,
@@ -277,7 +277,7 @@
   },
   "advice": [
     "계좌 전체는 이미 준수한 수익 구간입니다. 오늘의 등락보다 포지션 구조와 집중도 관리가 더 중요해 보입니다.",
-    "손실 종목 중에는 삼성전자(-22,000원), 수익 기여 종목 중에는 SK하이닉스(+124,000원)가 가장 큽니다. 개선 행동은 '무엇을 더 살까'보다 '무엇을 유지/축소할까' 관점으로 보는 게 좋습니다.",
+    "손실 종목 중에는 삼성전자(-22,000원), 수익 기여 종목 중에는 SK하이닉스(+123,000원)가 가장 큽니다. 개선 행동은 '무엇을 더 살까'보다 '무엇을 유지/축소할까' 관점으로 보는 게 좋습니다.",
     "당일 하락 종목이 여러 개 있어도 계좌 전체는 여전히 평가이익 상태입니다. 단기 흔들림에 반응해 구조를 망가뜨리지 않는 쪽이 더 좋아 보입니다.",
     "미국 포지션 중 비중이 매우 작은 종목이 있습니다. 학습용 포지션인지, 장기 전략 포지션인지 기준을 분리해두면 의사결정이 더 선명해집니다."
   ],
@@ -293,43 +293,43 @@
     "winners": [
       {
         "name": "SK하이닉스",
-        "profit": 124000.0,
-        "weight": 0.29427452207521715
+        "profit": 123000.0,
+        "weight": 0.2940205133190239
       },
       {
         "name": "KODEX 200",
-        "profit": 61425.0,
-        "weight": 0.24990478102834218
+        "profit": 61825.0,
+        "weight": 0.25004601672058097
       },
       {
         "name": "TIGER K방산&우주",
-        "profit": 13630.0,
-        "weight": 0.028918900120828622
+        "profit": 13660.0,
+        "weight": 0.028930589867396668
       }
     ],
     "losers": [
       {
         "name": "삼성전자",
         "profit": -22000.0,
-        "weight": 0.22913414243138266
+        "weight": 0.22915884517187285
       },
       {
         "name": "TIGER 미국배당다우존스",
         "profit": -2030.0,
-        "weight": 0.02887890164209995
+        "weight": 0.02888201504984153
       },
       {
         "name": "GLD",
-        "profit": -1813.793221,
-        "weight": 0.007869474063913768
+        "profit": -1788.964855,
+        "weight": 0.007877416778467553
       }
     ]
   },
   "headline": {
-    "total_asset": 3591952.0,
-    "profit": 188063.0,
-    "profit_rate": 0.0567,
-    "kr_total": 2998629.0,
-    "us_total": 593323.0
+    "total_asset": 3592524.0,
+    "profit": 188635.0,
+    "profit_rate": 0.0569,
+    "kr_total": 2999009.0,
+    "us_total": 593515.0
   }
 }
