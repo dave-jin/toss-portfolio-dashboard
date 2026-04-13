@@ -1,9 +1,6 @@
-const PASSWORD_KEY = 'rich-dad-dashboard-password';
-const PASSWORD_CHANGED_KEY = 'rich-dad-dashboard-password-changed';
 const SESSION_AUTH_KEY = 'rich-dad-dashboard-authenticated';
-const DEFAULT_PASSWORD = '12345';
 
-const state = { latest: null, context: null, history: null };
+const state = { latest: null, context: null, history: null, auth: { needsPasswordChange: true } };
 
 const qs = (sel) => document.querySelector(sel);
 const qsa = (sel) => [...document.querySelectorAll(sel)];
@@ -13,12 +10,15 @@ const signedWon = (v) => `${Number(v || 0) > 0 ? '+' : ''}${Math.round(Number(v 
 const signedPct = (v) => `${Number(v || 0) > 0 ? '+' : ''}${(Number(v || 0) * 100).toFixed(2)}%`;
 const dateText = (v) => (v || '').replace('T', ' ').slice(0, 16);
 
-function getSavedPassword() { return localStorage.getItem(PASSWORD_KEY) || DEFAULT_PASSWORD; }
-function isPasswordChanged() { return localStorage.getItem(PASSWORD_CHANGED_KEY) === 'true'; }
-function setPassword(next) {
-  localStorage.setItem(PASSWORD_KEY, next);
-  localStorage.setItem(PASSWORD_CHANGED_KEY, 'true');
+async function passwordApi(method, body) {
+  const res = await fetch('/api/auth/password', {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return res.json();
 }
+
 function setSessionAuth(ok) {
   sessionStorage.setItem(SESSION_AUTH_KEY, ok ? 'true' : 'false');
 }
@@ -221,7 +221,7 @@ function renderFooter() {
 }
 
 function openForceResetIfNeeded() {
-  if (!isPasswordChanged()) show(qs('#password-reset-modal'));
+  if (state.auth.needsPasswordChange) show(qs('#password-reset-modal'));
 }
 
 function mountApp() {
@@ -238,30 +238,34 @@ function mountApp() {
 }
 
 async function loadData() {
-  const [latest, context, history] = await Promise.all([
+  const [latest, context, history, auth] = await Promise.all([
     fetch('/data/latest.json', { cache: 'no-store' }).then(r => r.json()),
     fetch('/data/investment_context.json', { cache: 'no-store' }).then(r => r.json()),
-    fetch('/data/history.json', { cache: 'no-store' }).then(r => r.json())
+    fetch('/data/history.json', { cache: 'no-store' }).then(r => r.json()),
+    passwordApi('GET')
   ]);
   state.latest = latest;
   state.context = context;
   state.history = history;
+  state.auth = auth || { needsPasswordChange: true };
 }
 
 function bindAuth() {
-  qs('#login-form').addEventListener('submit', (e) => {
+  qs('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = qs('#password-input').value;
-    if (input !== getSavedPassword()) {
-      qs('#login-error').textContent = '비밀번호가 맞지 않아.';
+    const result = await passwordApi('POST', { password: input });
+    if (!result.ok || !result.authenticated) {
+      qs('#login-error').textContent = '비밀번호가 맞지 않거나 서버 설정이 아직 안 끝났어.';
       return;
     }
     qs('#login-error').textContent = '';
+    state.auth.needsPasswordChange = !!result.needsPasswordChange;
     setSessionAuth(true);
     mountApp();
   });
 
-  qs('#force-reset-form').addEventListener('submit', (e) => {
+  qs('#force-reset-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const a = qs('#force-new-password').value;
     const b = qs('#force-confirm-password').value;
@@ -273,7 +277,12 @@ function bindAuth() {
       qs('#force-reset-error').textContent = '새 비밀번호가 서로 달라.';
       return;
     }
-    setPassword(a);
+    const result = await passwordApi('PATCH', { currentPassword: '12345', nextPassword: a });
+    if (!result.ok) {
+      qs('#force-reset-error').textContent = '비밀번호 저장에 실패했어. Supabase 설정을 먼저 확인해야 해.';
+      return;
+    }
+    state.auth.needsPasswordChange = false;
     qs('#force-reset-error').textContent = '';
     hide(qs('#password-reset-modal'));
   });
@@ -284,16 +293,11 @@ function bindAuth() {
     qs('#settings-success').textContent = '';
   });
   qs('#settings-close').addEventListener('click', () => hide(qs('#settings-modal')));
-  qs('#settings-form').addEventListener('submit', (e) => {
+  qs('#settings-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const current = qs('#current-password').value;
     const next = qs('#new-password').value;
     const confirm = qs('#confirm-password').value;
-    if (current !== getSavedPassword()) {
-      qs('#settings-error').textContent = '현재 비밀번호가 맞지 않아.';
-      qs('#settings-success').textContent = '';
-      return;
-    }
     if (next.length < 4) {
       qs('#settings-error').textContent = '새 비밀번호는 최소 4자 이상이어야 해.';
       qs('#settings-success').textContent = '';
@@ -304,7 +308,13 @@ function bindAuth() {
       qs('#settings-success').textContent = '';
       return;
     }
-    setPassword(next);
+    const result = await passwordApi('PATCH', { currentPassword: current, nextPassword: next });
+    if (!result.ok) {
+      qs('#settings-error').textContent = '현재 비밀번호가 틀렸거나 Supabase 연결이 아직 완료되지 않았어.';
+      qs('#settings-success').textContent = '';
+      return;
+    }
+    state.auth.needsPasswordChange = false;
     qs('#settings-error').textContent = '';
     qs('#settings-success').textContent = '비밀번호를 변경했어.';
     qsa('#settings-form input').forEach(el => el.value = '');
