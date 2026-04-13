@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { fetchAssetProfiles, fetchJournalEntries, fetchTrades } from '../../lib/supabase.js';
 import { readSession } from '../../lib/session.js';
 
@@ -8,8 +9,11 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function readJson(relativePath, fallback) {
-  const target = path.join(process.cwd(), relativePath);
+  const target = path.resolve(__dirname, relativePath);
   try {
     const raw = await fs.readFile(target, 'utf8');
     return JSON.parse(raw);
@@ -56,9 +60,9 @@ export default async function handler(req, res) {
     const session = readSession(req);
     if (!session) return json(res, 401, { ok: false, error: 'unauthorized' });
 
-    const latest = await readJson('public/data/latest.json', {});
-    const history = await readJson('public/data/history.json', []);
-    const context = await readJson('data/investment_context.json', {});
+    const latest = await readJson('../../public/data/latest.json', {});
+    const history = await readJson('../../public/data/history.json', []);
+    const context = await readJson('../../data/investment_context.json', {});
     const [profiles, trades, journals] = await Promise.all([
       fetchAssetProfiles(),
       fetchTrades(),
