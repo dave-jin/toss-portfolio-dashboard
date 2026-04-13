@@ -19,6 +19,10 @@ async function passwordApi(method, body) {
   return res.json();
 }
 
+function visibleError(message, fallback) {
+  return message || fallback;
+}
+
 function setSessionAuth(ok) {
   sessionStorage.setItem(SESSION_AUTH_KEY, ok ? 'true' : 'false');
 }
@@ -256,7 +260,7 @@ function bindAuth() {
     const input = qs('#password-input').value;
     const result = await passwordApi('POST', { password: input });
     if (!result.ok || !result.authenticated) {
-      qs('#login-error').textContent = '비밀번호가 맞지 않거나 서버 설정이 아직 안 끝났어.';
+      qs('#login-error').textContent = visibleError(result.error, '비밀번호가 맞지 않거나 서버 설정이 아직 안 끝났어.');
       return;
     }
     qs('#login-error').textContent = '';
@@ -279,7 +283,7 @@ function bindAuth() {
     }
     const result = await passwordApi('PATCH', { currentPassword: '12345', nextPassword: a });
     if (!result.ok) {
-      qs('#force-reset-error').textContent = '비밀번호 저장에 실패했어. Supabase 설정을 먼저 확인해야 해.';
+      qs('#force-reset-error').textContent = visibleError(result.error, '비밀번호 저장에 실패했어. Supabase 설정을 먼저 확인해야 해.');
       return;
     }
     state.auth.needsPasswordChange = false;
@@ -310,7 +314,7 @@ function bindAuth() {
     }
     const result = await passwordApi('PATCH', { currentPassword: current, nextPassword: next });
     if (!result.ok) {
-      qs('#settings-error').textContent = '현재 비밀번호가 틀렸거나 Supabase 연결이 아직 완료되지 않았어.';
+      qs('#settings-error').textContent = visibleError(result.error, '현재 비밀번호가 틀렸거나 Supabase 연결이 아직 완료되지 않았어.');
       qs('#settings-success').textContent = '';
       return;
     }
@@ -324,6 +328,11 @@ function bindAuth() {
 (async function init() {
   bindAuth();
   await loadData();
+  if (state.auth?.ok === false) {
+    show(qs('#auth-overlay'));
+    qs('#login-error').textContent = visibleError(state.auth.error, 'Supabase 인증 상태를 불러오지 못했어.');
+    return;
+  }
   if (isSessionAuthed()) {
     mountApp();
   } else {

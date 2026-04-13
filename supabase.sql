@@ -12,6 +12,14 @@ insert into rich_dad_dashboard.dashboard_auth_config (key, password_hash, passwo
 values ('dashboard_password', 'scrypt$placeholder$replace-after-first-run', false)
 on conflict (key) do nothing;
 
+grant usage on schema rich_dad_dashboard to anon, authenticated, service_role;
+grant all on all tables in schema rich_dad_dashboard to anon, authenticated, service_role;
+grant all on all routines in schema rich_dad_dashboard to anon, authenticated, service_role;
+grant all on all sequences in schema rich_dad_dashboard to anon, authenticated, service_role;
+alter default privileges for role postgres in schema rich_dad_dashboard grant all on tables to anon, authenticated, service_role;
+alter default privileges for role postgres in schema rich_dad_dashboard grant all on routines to anon, authenticated, service_role;
+alter default privileges for role postgres in schema rich_dad_dashboard grant all on sequences to anon, authenticated, service_role;
+
 alter table rich_dad_dashboard.dashboard_auth_config enable row level security;
 
 drop policy if exists "deny_all_anon_select" on rich_dad_dashboard.dashboard_auth_config;
