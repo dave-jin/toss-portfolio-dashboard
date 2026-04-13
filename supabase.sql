@@ -9,7 +9,7 @@ create table if not exists rich_dad_dashboard.dashboard_auth_config (
 );
 
 insert into rich_dad_dashboard.dashboard_auth_config (key, password_hash, password_changed)
-values ('dashboard_password', 'scrypt$placeholder$replace-after-first-run', false)
+values ('dashboard_password', 'scrypt$bd977546916af59e14dcbe5e4d42ae5b$dd4e7f83ff1122ce2e0b3293698ac255e8d15ef6da41eaa4c391d2423326bd827b0963597fa0693a7fe511e527ddfd64550f2e58d52919a831ac95c6a305783a', false)
 on conflict (key) do nothing;
 
 grant usage on schema rich_dad_dashboard to anon, authenticated, service_role;
