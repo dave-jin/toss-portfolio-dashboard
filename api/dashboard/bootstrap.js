@@ -1,4 +1,20 @@
-import { fetchAssetProfiles, fetchJournalEntries, fetchTrades } from '../../lib/supabase.js';
+import {
+  fetchAssetProfiles,
+  fetchDashboardHistory,
+  fetchJournalEntries,
+  fetchLatestDashboardSnapshot,
+  fetchMarketCacheRows,
+  fetchNewsItems,
+  fetchRuntimeConfigMap,
+  fetchTrades,
+} from '../../lib/supabase.js';
+import {
+  buildMarketCacheMap,
+  DASHBOARD_CONFIG_KEYS,
+  defaultAppTabs,
+  defaultAssetTabOptions,
+  normalizeSnapshotHistory,
+} from '../../lib/dashboard.js';
 import { readSession } from '../../lib/session.js';
 
 function json(res, status, payload) {
@@ -56,41 +72,44 @@ export default async function handler(req, res) {
     const session = readSession(req);
     if (!session) return json(res, 401, { ok: false, error: 'unauthorized' });
 
-    const latest = await readRemoteJson(req, '/data/latest.json', {});
-    const history = await readRemoteJson(req, '/data/history.json', []);
-    const meta = await readRemoteJson(req, '/data/dashboard_meta.json', {});
-    const [profiles, trades, journals] = await Promise.all([
-      fetchAssetProfiles(),
-      fetchTrades(),
-      fetchJournalEntries(),
+    const [latestFallback, historyFallback, metaFallback, marketCacheFallback] = await Promise.all([
+      readRemoteJson(req, '/data/latest.json', {}),
+      readRemoteJson(req, '/data/history.json', []),
+      readRemoteJson(req, '/data/dashboard_meta.json', {}),
+      readRemoteJson(req, '/data/korean_stock_cache.json', {}),
     ]);
+
+    const [runtimeConfig, latestSnapshot, historyRows, profiles, trades, journals, marketCacheRows, news] = await Promise.all([
+      fetchRuntimeConfigMap(DASHBOARD_CONFIG_KEYS).catch(() => ({})),
+      fetchLatestDashboardSnapshot().catch(() => null),
+      fetchDashboardHistory().catch(() => []),
+      fetchAssetProfiles().catch(() => []),
+      fetchTrades().catch(() => []),
+      fetchJournalEntries().catch(() => []),
+      fetchMarketCacheRows().catch(() => []),
+      fetchNewsItems().catch(() => []),
+    ]);
+
+    const latest = latestSnapshot?.latest || latestFallback || {};
+    const latestPositions = latest.positions || latestSnapshot?.positions || [];
 
     return json(res, 200, {
       ok: true,
       latest,
-      history,
-      project: meta.project || {},
-      investorProfile: meta.investor_profile || {},
-      redTeamProtocol: meta.red_team_protocol || [],
-      sellChecklist: meta.sell_checklist || [],
-      currentWatchpoints: meta.current_watchpoints || [],
-      assetProfiles: mergeProfiles({}, profiles, latest.positions || []),
+      history: historyRows.length ? normalizeSnapshotHistory(historyRows) : historyFallback,
+      project: runtimeConfig.project || metaFallback.project || {},
+      investorProfile: runtimeConfig.investor_profile || metaFallback.investor_profile || {},
+      redTeamProtocol: runtimeConfig.red_team_protocol || metaFallback.red_team_protocol || [],
+      sellChecklist: runtimeConfig.sell_checklist || metaFallback.sell_checklist || [],
+      currentWatchpoints: runtimeConfig.current_watchpoints || metaFallback.current_watchpoints || [],
+      decisionHistory: runtimeConfig.decision_history || metaFallback.decision_history || [],
+      assetProfiles: mergeProfiles({}, profiles, latestPositions),
       trades,
       journals,
-      appTabs: [
-        { key: 'judgment', label: '오늘의 판단' },
-        { key: 'journal', label: '투자일기' },
-        { key: 'notes', label: '종목노트' },
-      ],
-      assetTabOptions: [
-        { key: 'core_kr', label: '국내 코어' },
-        { key: 'core_us', label: '미국 코어' },
-        { key: 'dividend', label: '배당/현금흐름' },
-        { key: 'hedge', label: '헤지' },
-        { key: 'theme', label: '테마/전술' },
-        { key: 'watchlist', label: '관찰/기타' },
-        { key: 'exited', label: '정리완료' },
-      ],
+      koreanStockCache: marketCacheRows.length ? buildMarketCacheMap(marketCacheRows) : marketCacheFallback,
+      news,
+      appTabs: defaultAppTabs(),
+      assetTabOptions: defaultAssetTabOptions(),
     });
   } catch (error) {
     return json(res, 500, { ok: false, error: error.message || 'server_error' });

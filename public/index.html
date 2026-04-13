@@ -12,7 +12,7 @@
     <div class="auth-card glass">
       <div class="eyebrow">Private Dashboard</div>
       <h1>부자 아빠 프로젝트</h1>
-      <p class="muted">이 페이지는 데이브의 투자 운영 시스템이에요. 로그인 후 오늘의 판단, 투자일기, 종목노트를 분리해서 볼 수 있어요.</p>
+      <p class="muted">이 페이지는 데이브의 투자 운영 시스템이에요. 로그인 후 현재 상태 및 분석, 투자 일기, 보유 종목 뉴스 흐름을 한 번에 볼 수 있어요.</p>
       <form id="login-form" class="stack gap-16">
         <input id="password-input" class="input" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
         <button class="btn primary wide" type="submit">대시보드 열기</button>
@@ -90,7 +90,7 @@
         <div class="section-head">
           <div>
             <div class="eyebrow">Today</div>
-            <h2>오늘의 판단</h2>
+            <h2>현재 상태 및 분석</h2>
           </div>
         </div>
         <div id="action-grid" class="action-grid"></div>
@@ -145,66 +145,8 @@
       <section class="container section">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Trade Feed</div>
-            <h2>최근 매수/매도 히스토리</h2>
-          </div>
-        </div>
-        <div id="recent-trades" class="trade-feed"></div>
-      </section>
-    </section>
-
-    <section id="tab-journal" class="tab-panel hidden">
-      <section class="container section">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Investment Journal</div>
-            <h2>투자일기</h2>
-          </div>
-        </div>
-        <div class="journal-layout">
-          <article class="panel glass journal-composer-card">
-            <div class="panel-topline">
-              <div>
-                <div class="eyebrow">Write</div>
-                <h3>오늘의 기록 남기기</h3>
-              </div>
-            </div>
-            <form id="journal-form" class="stack gap-12">
-              <input id="journal-id" type="hidden">
-              <div class="input-row two">
-                <input id="journal-date" class="input" type="date">
-                <input id="journal-mood" class="input" type="text" placeholder="감정/상태 (예: 차분, 경계, 공격적 아님)">
-              </div>
-              <input id="journal-title" class="input" type="text" placeholder="제목">
-              <input id="journal-tags" class="input" type="text" placeholder="태그 (쉼표로 구분)">
-              <input id="journal-symbols" class="input" type="text" placeholder="관련 종목 (예: A005930, VOO)">
-              <textarea id="journal-body" class="input textarea" placeholder="오늘의 판단, 배운 점, 다음 행동을 자유롭게 적어줘요."></textarea>
-              <div class="form-actions">
-                <button class="btn primary" type="submit">저장</button>
-                <button id="journal-reset" class="btn ghost" type="button">초기화</button>
-              </div>
-            </form>
-            <div id="journal-form-status" class="success"></div>
-          </article>
-          <article class="panel glass">
-            <div class="panel-topline">
-              <div>
-                <div class="eyebrow">Timeline</div>
-                <h3>저장된 투자일기</h3>
-              </div>
-            </div>
-            <div id="journal-list" class="journal-list"></div>
-          </article>
-        </div>
-      </section>
-    </section>
-
-    <section id="tab-notes" class="tab-panel hidden">
-      <section class="container section">
-        <div class="section-head">
-          <div>
-            <div class="eyebrow">Asset Notes</div>
-            <h2>종목노트</h2>
+            <div class="eyebrow">Asset Analysis</div>
+            <h2>보유 종목 분석과 메모</h2>
           </div>
         </div>
         <div class="notes-layout">
@@ -266,6 +208,76 @@
             </article>
           </div>
         </div>
+      </section>
+
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Trade Feed</div>
+            <h2>최근 매수/매도 히스토리</h2>
+          </div>
+        </div>
+        <div id="recent-trades" class="trade-feed"></div>
+      </section>
+    </section>
+
+    <section id="tab-journal" class="tab-panel hidden">
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Investment Journal</div>
+            <h2>투자일기</h2>
+          </div>
+        </div>
+        <div class="journal-layout">
+          <article class="panel glass journal-composer-card">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Write</div>
+                <h3>오늘의 기록 남기기</h3>
+              </div>
+            </div>
+            <form id="journal-form" class="stack gap-12">
+              <input id="journal-id" type="hidden">
+              <div class="input-row two">
+                <input id="journal-date" class="input" type="date">
+                <input id="journal-mood" class="input" type="text" placeholder="감정/상태 (예: 차분, 경계, 공격적 아님)">
+              </div>
+              <input id="journal-title" class="input" type="text" placeholder="제목">
+              <input id="journal-tags" class="input" type="text" placeholder="태그 (쉼표로 구분)">
+              <input id="journal-symbols" class="input" type="text" placeholder="관련 종목 (예: A005930, VOO)">
+              <textarea id="journal-body" class="input textarea" placeholder="오늘의 판단, 배운 점, 다음 행동을 자유롭게 적어줘요."></textarea>
+              <div class="form-actions">
+                <button class="btn primary" type="submit">저장</button>
+                <button id="journal-reset" class="btn ghost" type="button">초기화</button>
+              </div>
+            </form>
+            <div id="journal-form-status" class="success"></div>
+          </article>
+          <article class="panel glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Timeline</div>
+                <h3>저장된 투자일기</h3>
+              </div>
+            </div>
+            <div id="journal-list" class="journal-list"></div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-news" class="tab-panel hidden">
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Holding News</div>
+            <h2>현재 가지고 있는 주식 관련 뉴스</h2>
+          </div>
+        </div>
+        <div id="news-summary" class="news-summary"></div>
+        <div id="news-list" class="news-list"></div>
+        <div id="news-empty" class="chart-empty hidden">뉴스를 아직 수집하지 못했어요. 다음 동기화에서 다시 채워질께요.</div>
       </section>
     </section>
 

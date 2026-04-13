@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-13T13:43:10+09:00",
+  "generated_at": "2026-04-13T17:49:39+09:00",
   "summary": {
-    "total_asset_amount": 3677235,
-    "evaluated_profit_amount": 187845,
-    "profit_rate": 0.0538,
+    "total_asset_amount": 3684114,
+    "evaluated_profit_amount": 194724,
+    "profit_rate": 0.0558,
     "orderable_amount_krw": 0,
     "orderable_amount_usd": 1.45,
     "withdrawable_kr": {
@@ -51,22 +51,22 @@
       "kr": {
         "market": "kr",
         "pending_buy_order_amount": 0,
-        "evaluated_amount": 3083605,
+        "evaluated_amount": 3091320,
         "principal_amount": 2909105,
-        "evaluated_profit_amount": 174500,
-        "profit_rate": 0.0599,
-        "total_asset_amount": 3083605,
+        "evaluated_profit_amount": 182215,
+        "profit_rate": 0.0626,
+        "total_asset_amount": 3091320,
         "orderable_amount_krw": 0,
         "orderable_amount_usd": 0
       },
       "us": {
         "market": "us",
         "pending_buy_order_amount": 0,
-        "evaluated_amount": 591485,
+        "evaluated_amount": 590649,
         "principal_amount": 578140,
-        "evaluated_profit_amount": 13345,
-        "profit_rate": 0.023,
-        "total_asset_amount": 593630,
+        "evaluated_profit_amount": 12509,
+        "profit_rate": 0.0216,
+        "total_asset_amount": 592794,
         "orderable_amount_krw": 2145,
         "orderable_amount_usd": 1.45
       },
@@ -103,15 +103,15 @@
       "market_code": "KSP",
       "quantity": 12,
       "average_price": 82367,
-      "current_price": 87425,
-      "market_value": 1049100,
-      "unrealized_pnl": 60695,
-      "profit_rate": 0.0614,
-      "daily_profit_loss": -14760,
-      "daily_profit_rate": -0.0149,
-      "_weight": 0.2854301488756617,
-      "_profit": 60695.0,
-      "_daily": -14760.0,
+      "current_price": 87880,
+      "market_value": 1054560,
+      "unrealized_pnl": 66155,
+      "profit_rate": 0.0669,
+      "daily_profit_loss": -9300,
+      "daily_profit_rate": -0.0094,
+      "_weight": 0.2864154701755505,
+      "_profit": 66155.0,
+      "_daily": -9300.0,
       "_playbook": {
         "symbol": "A069500",
         "display_name": "KODEX 200",
@@ -189,15 +189,15 @@
       "market_code": "KSP",
       "quantity": 1,
       "average_price": 906000,
-      "current_price": 1029000,
-      "market_value": 1029000,
-      "unrealized_pnl": 123000,
-      "profit_rate": 0.1357,
-      "daily_profit_loss": 2000,
-      "daily_profit_rate": 0.0022,
-      "_weight": 0.27996151290921356,
-      "_profit": 123000.0,
-      "_daily": 2000.0,
+      "current_price": 1032000,
+      "market_value": 1032000,
+      "unrealized_pnl": 126000,
+      "profit_rate": 0.139,
+      "daily_profit_loss": 5000,
+      "daily_profit_rate": 0.0055,
+      "_weight": 0.2802882389064332,
+      "_profit": 126000.0,
+      "_daily": 5000.0,
       "_playbook": {
         "symbol": "A000660",
         "display_name": "SK하이닉스",
@@ -239,15 +239,15 @@
       "market_code": "KSP",
       "quantity": 4,
       "average_price": 206000,
-      "current_price": 201000,
-      "market_value": 804000,
-      "unrealized_pnl": -20000,
-      "profit_rate": -0.0242,
-      "daily_profit_loss": -20000,
-      "daily_profit_rate": -0.0242,
-      "_weight": 0.21874543865792778,
-      "_profit": -20000.0,
-      "_daily": -20000.0,
+      "current_price": 200500,
+      "market_value": 802000,
+      "unrealized_pnl": -22000,
+      "profit_rate": -0.0266,
+      "daily_profit_loss": -22000,
+      "daily_profit_rate": -0.0266,
+      "_weight": 0.21782089884007694,
+      "_profit": -22000.0,
+      "_daily": -22000.0,
       "_playbook": {
         "symbol": "A005930",
         "display_name": "삼성전자",
@@ -289,22 +289,22 @@
       "market_code": "AMX",
       "quantity": 0.35926,
       "average_price": 901266,
-      "current_price": 917490,
-      "market_value": 329617.744089,
-      "unrealized_pnl": 5828.744089,
-      "profit_rate": 0.018,
-      "daily_profit_loss": -2440.1952,
-      "daily_profit_rate": -0.0075,
+      "current_price": 918881,
+      "market_value": 330117.47906,
+      "unrealized_pnl": 6328.47906,
+      "profit_rate": 0.0195,
+      "daily_profit_loss": -1940.4602,
+      "daily_profit_rate": -0.0059,
       "average_price_usd": 611.060218,
-      "current_price_usd": 620.01,
-      "market_value_usd": 222.744792,
-      "unrealized_pnl_usd": 3.215298,
-      "profit_rate_usd": 0.0146,
-      "daily_profit_loss_usd": -1.649,
-      "daily_profit_rate_usd": -0.0075,
-      "_weight": 0.08967957465197125,
-      "_profit": 5828.744089,
-      "_daily": -2440.1952,
+      "current_price_usd": 620.95,
+      "market_value_usd": 223.082497,
+      "unrealized_pnl_usd": 3.553003,
+      "profit_rate_usd": 0.0161,
+      "daily_profit_loss_usd": -1.3112,
+      "daily_profit_rate_usd": -0.0059,
+      "_weight": 0.08965896011430109,
+      "_profit": 6328.47906,
+      "_daily": -1940.4602,
       "_playbook": {
         "symbol": "VOO",
         "display_name": "VOO",
@@ -344,22 +344,22 @@
       "market_code": "AMX",
       "quantity": 2.703501,
       "average_price": 83215,
-      "current_price": 86642,
-      "market_value": 234237.517657,
-      "unrealized_pnl": 9263.517657,
-      "profit_rate": 0.0411,
-      "daily_profit_loss": 6441.0316,
-      "daily_profit_rate": 0.0286,
+      "current_price": 86124,
+      "market_value": 232837.293384,
+      "unrealized_pnl": 7863.293384,
+      "profit_rate": 0.0349,
+      "daily_profit_loss": 5040.8073,
+      "daily_profit_rate": 0.0224,
       "average_price_usd": 56.83,
-      "current_price_usd": 58.55,
-      "market_value_usd": 158.289983,
-      "unrealized_pnl_usd": 4.650021,
-      "profit_rate_usd": 0.0302,
-      "daily_profit_loss_usd": 4.3526,
-      "daily_profit_rate_usd": 0.0283,
-      "_weight": 0.06372933899256787,
-      "_profit": 9263.517657,
-      "_daily": 6441.0316,
+      "current_price_usd": 58.2,
+      "market_value_usd": 157.343758,
+      "unrealized_pnl_usd": 3.703796,
+      "profit_rate_usd": 0.0241,
+      "daily_profit_loss_usd": 3.4064,
+      "daily_profit_rate_usd": 0.0221,
+      "_weight": 0.0632379408084708,
+      "_profit": 7863.293384,
+      "_daily": 5040.8073,
       "_playbook": {
         "symbol": "XLE",
         "display_name": "XLE",
@@ -398,56 +398,6 @@
       }
     },
     {
-      "product_code": "A458730",
-      "symbol": "A458730",
-      "name": "TIGER 미국배당다우존스",
-      "market_type": "KR_STOCK",
-      "market_code": "KSP",
-      "quantity": 7,
-      "average_price": 14730,
-      "current_price": 14445,
-      "market_value": 101115,
-      "unrealized_pnl": -1995,
-      "profit_rate": -0.0193,
-      "daily_profit_loss": -840,
-      "daily_profit_rate": -0.0081,
-      "_weight": 0.02751050376852782,
-      "_profit": -1995.0,
-      "_daily": -840.0,
-      "_playbook": {
-        "symbol": "A458730",
-        "display_name": "TIGER 미국배당다우존스",
-        "role": "배당 자동화 자산",
-        "why_bought": [
-          "자동화 자산 비중 확대",
-          "월 배당/현금흐름 성격의 자산 확보",
-          "가격 차익보다 구조적 현금흐름 실험"
-        ],
-        "buy_history": [
-          {
-            "date": "2026-04-01",
-            "qty": 7,
-            "price": 14705,
-            "note": "배당 자동화 자산 첫 씨앗"
-          }
-        ],
-        "sell_plan": {
-          "type": "재검토 트리거",
-          "default": "기본 매도 안 함",
-          "target_1": {
-            "price_krw": 17500,
-            "note": "+19%"
-          },
-          "target_2": {
-            "price_krw": 20000,
-            "note": "+36%"
-          },
-          "stop_review": "12,000↓ 또는 배당 매력 훼손"
-        },
-        "next_best_action": "단기 수익률보다 자동화 자산 역할이 유지되는지 확인"
-      }
-    },
-    {
       "product_code": "A463250",
       "symbol": "A463250",
       "name": "TIGER K방산&우주",
@@ -455,15 +405,15 @@
       "market_code": "KSP",
       "quantity": 2,
       "average_price": 43795,
-      "current_price": 50425,
-      "market_value": 100850,
-      "unrealized_pnl": 13260,
-      "profit_rate": 0.1513,
-      "daily_profit_loss": -250,
-      "daily_profit_rate": -0.0028,
-      "_weight": 0.02743840483663186,
-      "_profit": 13260.0,
-      "_daily": -250.0,
+      "current_price": 50700,
+      "market_value": 101400,
+      "unrealized_pnl": 13810,
+      "profit_rate": 0.1576,
+      "daily_profit_loss": 300,
+      "daily_profit_rate": 0.0034,
+      "_weight": 0.027539949055341396,
+      "_profit": 13810.0,
+      "_daily": 300.0,
       "_playbook": {
         "symbol": "A463250",
         "display_name": "TIGER K방산&우주",
@@ -503,6 +453,56 @@
       }
     },
     {
+      "product_code": "A458730",
+      "symbol": "A458730",
+      "name": "TIGER 미국배당다우존스",
+      "market_type": "KR_STOCK",
+      "market_code": "KSP",
+      "quantity": 7,
+      "average_price": 14730,
+      "current_price": 14480,
+      "market_value": 101360,
+      "unrealized_pnl": -1750,
+      "profit_rate": -0.0169,
+      "daily_profit_loss": -595,
+      "daily_profit_rate": -0.0057,
+      "_weight": 0.027529085170112468,
+      "_profit": -1750.0,
+      "_daily": -595.0,
+      "_playbook": {
+        "symbol": "A458730",
+        "display_name": "TIGER 미국배당다우존스",
+        "role": "배당 자동화 자산",
+        "why_bought": [
+          "자동화 자산 비중 확대",
+          "월 배당/현금흐름 성격의 자산 확보",
+          "가격 차익보다 구조적 현금흐름 실험"
+        ],
+        "buy_history": [
+          {
+            "date": "2026-04-01",
+            "qty": 7,
+            "price": 14705,
+            "note": "배당 자동화 자산 첫 씨앗"
+          }
+        ],
+        "sell_plan": {
+          "type": "재검토 트리거",
+          "default": "기본 매도 안 함",
+          "target_1": {
+            "price_krw": 17500,
+            "note": "+19%"
+          },
+          "target_2": {
+            "price_krw": 20000,
+            "note": "+36%"
+          },
+          "stop_review": "12,000↓ 또는 배당 매력 훼손"
+        },
+        "next_best_action": "단기 수익률보다 자동화 자산 역할이 유지되는지 확인"
+      }
+    },
+    {
       "product_code": "US20041118001",
       "symbol": "GLD",
       "name": "GLD",
@@ -510,22 +510,22 @@
       "market_code": "AMX",
       "quantity": 0.043021,
       "average_price": 682410,
-      "current_price": 641197,
-      "market_value": 27584.950764,
-      "unrealized_pnl": -1773.049236,
-      "profit_rate": -0.0603,
-      "daily_profit_loss": -243.8272,
-      "daily_profit_rate": -0.0083,
+      "current_price": 642691,
+      "market_value": 27649.249864,
+      "unrealized_pnl": -1708.750136,
+      "profit_rate": -0.0582,
+      "daily_profit_loss": -179.5281,
+      "daily_profit_rate": -0.0061,
       "average_price_usd": 461.159991,
-      "current_price_usd": 433.3,
-      "market_value_usd": 18.640999,
-      "unrealized_pnl_usd": -1.198565,
-      "profit_rate_usd": -0.0604,
-      "daily_profit_loss_usd": -0.1647,
-      "daily_profit_rate_usd": -0.0083,
-      "_weight": 0.0075050773074981595,
-      "_profit": -1773.049236,
-      "_daily": -243.8272,
+      "current_price_usd": 434.31,
+      "market_value_usd": 18.68445,
+      "unrealized_pnl_usd": -1.155114,
+      "profit_rate_usd": -0.0582,
+      "daily_profit_loss_usd": -0.1213,
+      "daily_profit_rate_usd": -0.0061,
+      "_weight": 0.00750945692971366,
+      "_profit": -1708.750136,
+      "_daily": -179.5281,
       "_playbook": {
         "symbol": "GLD",
         "display_name": "GLD",
@@ -553,13 +553,13 @@
     }
   ],
   "metrics": {
-    "equity_total": 3675505.21251,
+    "equity_total": 3681924.022308,
     "position_count": 8,
-    "top3_weight": 0.784137100442803,
+    "top3_weight": 0.7845246079220607,
     "top1": {
       "name": "KODEX 200",
-      "weight": 0.2854301488756617,
-      "market_value": 1049100
+      "weight": 0.2864154701755505,
+      "market_value": 1054560
     },
     "cash_krw": 0.0,
     "cash_usd": 1.45,
@@ -568,13 +568,13 @@
   },
   "advice": [
     "계좌 전체는 이미 준수한 수익 구간입니다. 오늘의 등락보다 포지션 구조와 집중도 관리가 더 중요해 보입니다.",
-    "손실 종목 중에는 삼성전자(-20,000원), 수익 기여 종목 중에는 SK하이닉스(+123,000원)가 가장 큽니다. 개선 행동은 '무엇을 더 살까'보다 '무엇을 유지/축소할까' 관점으로 보는 게 좋습니다.",
+    "손실 종목 중에는 삼성전자(-22,000원), 수익 기여 종목 중에는 SK하이닉스(+126,000원)가 가장 큽니다. 개선 행동은 '무엇을 더 살까'보다 '무엇을 유지/축소할까' 관점으로 보는 게 좋습니다.",
     "당일 하락 종목이 여러 개 있어도 계좌 전체는 여전히 평가이익 상태입니다. 단기 흔들림에 반응해 구조를 망가뜨리지 않는 쪽이 더 좋아 보입니다.",
     "KODEX 200의 현재 운영 포인트는 '가격 등락보다 적립 원칙이 여전히 유효한지 점검' 이야. 가격보다 이 논거가 유지되는지 먼저 봐야 해.",
     "미국 포지션 중 비중이 매우 작은 종목이 있습니다. 학습용 포지션인지, 장기 전략 포지션인지 기준을 분리해두면 의사결정이 더 선명해집니다."
   ],
   "cautions": [
-    "상위 3개 종목 비중이 78.4%입니다. 수익이 날 때는 좋아 보이지만, 변동성도 함께 커질 수 있습니다.",
+    "상위 3개 종목 비중이 78.5%입니다. 수익이 날 때는 좋아 보이지만, 변동성도 함께 커질 수 있습니다.",
     "대기 현금이 많지 않아 새 기회가 와도 즉시 대응할 선택지가 제한됩니다. 신규 매수보다 리밸런싱 우선순위를 먼저 보는 편이 낫습니다."
   ],
   "next_actions": [
@@ -585,43 +585,43 @@
     "winners": [
       {
         "name": "SK하이닉스",
-        "profit": 123000.0,
-        "weight": 0.27996151290921356
+        "profit": 126000.0,
+        "weight": 0.2802882389064332
       },
       {
         "name": "KODEX 200",
-        "profit": 60695.0,
-        "weight": 0.2854301488756617
+        "profit": 66155.0,
+        "weight": 0.2864154701755505
       },
       {
         "name": "TIGER K방산&우주",
-        "profit": 13260.0,
-        "weight": 0.02743840483663186
+        "profit": 13810.0,
+        "weight": 0.027539949055341396
       }
     ],
     "losers": [
       {
         "name": "삼성전자",
-        "profit": -20000.0,
-        "weight": 0.21874543865792778
+        "profit": -22000.0,
+        "weight": 0.21782089884007694
       },
       {
         "name": "TIGER 미국배당다우존스",
-        "profit": -1995.0,
-        "weight": 0.02751050376852782
+        "profit": -1750.0,
+        "weight": 0.027529085170112468
       },
       {
         "name": "GLD",
-        "profit": -1773.049236,
-        "weight": 0.0075050773074981595
+        "profit": -1708.750136,
+        "weight": 0.00750945692971366
       }
     ]
   },
   "headline": {
-    "total_asset": 3677235.0,
-    "profit": 187845.0,
-    "profit_rate": 0.0538,
-    "kr_total": 3083605.0,
-    "us_total": 593630.0
+    "total_asset": 3684114.0,
+    "profit": 194724.0,
+    "profit_rate": 0.0558,
+    "kr_total": 3091320.0,
+    "us_total": 592794.0
   }
 }

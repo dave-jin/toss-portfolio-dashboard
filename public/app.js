@@ -4,6 +4,7 @@ const state = {
   auth: { needsPasswordChange: true },
   latest: null,
   history: [],
+  news: [],
   project: {},
   investorProfile: {},
   redTeamProtocol: [],
@@ -19,6 +20,7 @@ const state = {
     selectedSymbol: null,
     koreanChartCache: {},
   },
+  koreanStockCache: {},
 };
 
 const qs = (sel) => document.querySelector(sel);
@@ -29,6 +31,11 @@ const pct = (v) => `${(Number(v || 0) * 100).toFixed(2)}%`;
 const signedPct = (v) => `${Number(v || 0) > 0 ? '+' : ''}${(Number(v || 0) * 100).toFixed(2)}%`;
 const dateText = (v) => (v || '').replace('T', ' ').slice(0, 16);
 const isoDate = (v) => (v || '').slice(0, 10);
+const snapshotLabel = (v) => {
+  const text = dateText(v);
+  if (!text) return '-';
+  return text.length > 10 ? text.slice(5, 16) : text;
+};
 const escapeHtml = (v='') => String(v)
   .replaceAll('&', '&amp;')
   .replaceAll('<', '&lt;')
@@ -98,7 +105,7 @@ function getTradesForSymbol(symbol) {
 
 function getPortfolioSeries() {
   return (state.history || []).map((item) => ({
-    label: isoDate(item.date),
+    label: snapshotLabel(item.date),
     value: Number(item.summary?.total_asset || item.positions?.reduce((sum, pos) => sum + Number(pos.market_value || 0), 0) || 0),
   })).filter(item => Number.isFinite(item.value) && item.value > 0);
 }
@@ -107,10 +114,19 @@ function getAssetSeries(symbol) {
   return (state.history || []).map((item) => {
     const found = (item.positions || []).find((pos) => pos.symbol === symbol);
     return found ? {
-      label: isoDate(item.date),
+      label: snapshotLabel(item.date),
       value: Number(found.market_value || found.current_price || 0),
     } : null;
   }).filter(Boolean).filter(item => Number.isFinite(item.value) && item.value > 0);
+}
+
+function getNewsBySymbol() {
+  const grouped = {};
+  for (const item of (state.news || [])) {
+    if (!grouped[item.symbol]) grouped[item.symbol] = [];
+    grouped[item.symbol].push(item);
+  }
+  return grouped;
 }
 
 function toPath(series, width, height, padding) {
@@ -307,6 +323,11 @@ function renderJournalList() {
 }
 
 function renderTabs() {
+  const validKeys = (state.appTabs || []).map((tab) => tab.key);
+  if (!validKeys.includes(state.ui.activeTab)) {
+    state.ui.activeTab = validKeys[0] || 'judgment';
+    sessionStorage.setItem('dashboard-active-tab', state.ui.activeTab);
+  }
   qs('#dashboard-tabs').innerHTML = (state.appTabs || []).map((tab) => `
     <button class="tab-btn ${state.ui.activeTab === tab.key ? 'active' : ''}" type="button" data-tab="${tab.key}">${escapeHtml(tab.label)}</button>
   `).join('');
@@ -344,16 +365,7 @@ async function renderSelectedAssetChart(position) {
   }
 
   if (position.market_type === 'KR_STOCK') {
-    const key = `${position.symbol}:${position.market_code || 'KSP'}`;
-    if (!state.ui.koreanChartCache[key]) {
-      try {
-        const payload = await jsonRequest(`/api/dashboard/korean-stock?symbol=${encodeURIComponent(position.symbol)}&market=${encodeURIComponent(position.market_code || 'KSP')}&days=18`);
-        state.ui.koreanChartCache[key] = payload;
-      } catch (error) {
-        state.ui.koreanChartCache[key] = { error: error.message };
-      }
-    }
-    const payload = state.ui.koreanChartCache[key];
+    const payload = state.koreanStockCache?.[position.symbol] || state.koreanStockCache?.[`${position.symbol}:${position.market_code || 'KSP'}`];
     if (payload?.series?.length) {
       const series = payload.series.map((item) => ({ label: item.base_date, value: Number(item.close_price || 0) })).filter(item => item.value > 0);
       renderLineChart(chartEl, series, { stroke: '#74f3a4', fill: '#74f3a4', title: position.name });
@@ -447,8 +459,73 @@ function renderFooter() {
     <div>마지막 생성 시각: ${escapeHtml(dateText(state.latest?.generated_at || ''))}</div>
     <div>운영 스타일: ${escapeHtml(state.investorProfile?.style || '-')}</div>
     <div>거시 원칙: ${escapeHtml(state.investorProfile?.macro_rule || '-')}</div>
-    <div>기록 원칙: 메모는 DB에 저장되고, 판단/투자일기/종목노트 탭에서 분리해서 볼 수 있어요.</div>
+    <div>기록 원칙: 메모와 뉴스, 스냅샷은 모두 DB 기준으로 불러오고 판단/투자일기/뉴스 흐름으로 운영해요.</div>
   `;
+}
+
+function renderNewsTab() {
+  const summaryEl = qs('#news-summary');
+  const listEl = qs('#news-list');
+  const emptyEl = qs('#news-empty');
+  if (!summaryEl || !listEl || !emptyEl) return;
+
+  const positions = getLatestPositions();
+  const grouped = getNewsBySymbol();
+  const cards = positions.map((position) => {
+    const items = (grouped[position.symbol] || []).slice(0, 4);
+    return {
+      symbol: position.symbol,
+      name: position.name,
+      count: items.length,
+      items,
+    };
+  }).filter((item) => item.count > 0);
+
+  if (!cards.length) {
+    summaryEl.innerHTML = '';
+    listEl.innerHTML = '';
+    show(emptyEl);
+    return;
+  }
+
+  hide(emptyEl);
+  const totalNews = cards.reduce((sum, item) => sum + item.count, 0);
+  summaryEl.innerHTML = `
+    <article class="panel glass news-summary-card">
+      <div class="panel-topline">
+        <div>
+          <div class="eyebrow">News Snapshot</div>
+          <h3>보유 종목 뉴스 요약</h3>
+        </div>
+        <div class="badge">${cards.length}개 종목 · ${totalNews}개 기사</div>
+      </div>
+      <div class="journal-body">현재 보유 종목 기준으로 최근 뉴스만 추려서 정리해뒀어요. 아침 리포트도 이 내용을 참고해서 보낼 수 있게 연결해둘께요.</div>
+    </article>
+  `;
+
+  listEl.innerHTML = cards.map((card) => `
+    <article class="panel glass news-group">
+      <div class="panel-topline">
+        <div>
+          <div class="eyebrow">${escapeHtml(card.symbol)}</div>
+          <h3>${escapeHtml(card.name)}</h3>
+        </div>
+        <div class="badge">최근 ${card.count}건</div>
+      </div>
+      <div class="news-items">
+        ${card.items.map((item) => `
+          <a class="news-item" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noreferrer noopener">
+            <div class="news-item-head">
+              <strong>${escapeHtml(item.title || '제목 없음')}</strong>
+              <span>${escapeHtml(dateText(item.published_at || item.updated_at || ''))}</span>
+            </div>
+            <div class="journal-body">${escapeHtml(item.summary || '요약을 아직 만들지 못했어요.')}</div>
+            <div class="trade-meta">${escapeHtml(item.source || 'news')}</div>
+          </a>
+        `).join('')}
+      </div>
+    </article>
+  `).join('');
 }
 
 function renderJudgmentTab() {
@@ -466,6 +543,7 @@ function renderAll() {
   renderJournalList();
   renderFooter();
   renderNotesTab();
+  renderNewsTab();
 }
 
 async function loadDashboard() {
@@ -481,6 +559,8 @@ async function loadDashboard() {
     assetProfiles: payload.assetProfiles || {},
     trades: payload.trades || [],
     journals: payload.journals || [],
+    news: payload.news || [],
+    koreanStockCache: payload.koreanStockCache || {},
     appTabs: payload.appTabs || [],
     assetTabOptions: payload.assetTabOptions || [],
   });

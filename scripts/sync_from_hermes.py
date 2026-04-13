@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
 import copy
 import json
+import re
 import shutil
 import subprocess
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 repo_root = Path.home() / 'projects' / 'toss-portfolio-dashboard'
 report_src = Path.home() / '.hermes' / 'reports' / 'toss'
@@ -36,6 +39,134 @@ def run_json(cmd):
     if proc.returncode != 0:
         raise RuntimeError((proc.stderr or proc.stdout).strip() or f'command failed: {cmd}')
     return json.loads(proc.stdout)
+
+
+def fetch_json_url(url, timeout=20):
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as res:
+            return json.loads(res.read().decode())
+    except Exception:
+        return None
+
+
+def fetch_text_url(url, timeout=20):
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as res:
+            return res.read().decode()
+    except Exception:
+        return None
+
+
+def clean_html(value):
+    text = re.sub(r'<[^>]+>', ' ', value or '')
+    return re.sub(r'\s+', ' ', text).strip()
+
+
+def fetch_google_news(query, limit=3):
+    if not query:
+        return []
+    encoded = urllib.parse.quote(query)
+    url = f'https://news.google.com/rss/search?q={encoded}&hl=ko&gl=KR&ceid=KR:ko'
+    xml_text = fetch_text_url(url)
+    if not xml_text:
+        return []
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return []
+
+    items = []
+    for item in root.findall('./channel/item')[:limit]:
+        title = (item.findtext('title') or '').strip()
+        link = (item.findtext('link') or '').strip()
+        description = clean_html(item.findtext('description') or '')
+        source = (item.findtext('source') or 'Google News').strip()
+        pub_date_raw = (item.findtext('pubDate') or '').strip()
+        published_at = None
+        if pub_date_raw:
+            try:
+                published_at = parsedate_to_datetime(pub_date_raw).astimezone().isoformat(timespec='seconds')
+            except Exception:
+                published_at = None
+        items.append({
+            'title': title,
+            'url': link,
+            'summary': description,
+            'source': source,
+            'published_at': published_at,
+            'raw': {
+                'query': query,
+                'pubDate': pub_date_raw,
+            },
+        })
+    return items
+
+
+def fetch_krx_json(endpoint, params):
+    base = 'https://k-skill-proxy.nomadamas.org'
+    url = f"{base}{endpoint}?{urllib.parse.urlencode(params)}"
+    try:
+        with urllib.request.urlopen(url, timeout=20) as res:
+            return json.loads(res.read().decode())
+    except Exception:
+        return None
+
+
+def yyyymmdd(value):
+    return value.strftime('%Y%m%d')
+
+
+def map_krx_market(market_code):
+    upper = str(market_code or '').upper()
+    if upper == 'KSQ':
+        return 'KOSDAQ'
+    if upper == 'KNX':
+        return 'KONEX'
+    return 'KOSPI'
+
+
+def build_korean_stock_cache(latest):
+    cache = {}
+    for position in latest.get('positions', []):
+        if position.get('market_type') != 'KR_STOCK':
+            continue
+        symbol = position.get('symbol')
+        if not symbol:
+            continue
+        code = symbol[1:] if symbol.startswith('A') else symbol
+        market = map_krx_market(position.get('market_code'))
+        series = []
+        cursor = datetime.now()
+        attempts = 0
+        while len(series) < 12 and attempts < 25:
+            bas_dd = yyyymmdd(cursor)
+            payload = fetch_krx_json('/v1/korean-stock/trade-info', {
+                'market': market,
+                'code': code,
+                'bas_dd': bas_dd,
+            })
+            item = (payload or {}).get('item')
+            if item:
+                series.append(item)
+            cursor = cursor - timedelta(days=1)
+            attempts += 1
+        base_info = None
+        if series:
+            base_payload = fetch_krx_json('/v1/korean-stock/base-info', {
+                'market': market,
+                'code': code,
+                'bas_dd': series[0].get('base_date'),
+            })
+            base_info = (base_payload or {}).get('item')
+        cache[symbol] = {
+            'market': market,
+            'market_code': position.get('market_code'),
+            'code': code,
+            'series': list(reversed(series)),
+            'base_info': base_info,
+            'source': 'KRX official data via k-skill-proxy',
+        }
+    return cache
 
 
 def supabase_config():
@@ -97,8 +228,11 @@ def write_public_files(latest_json_src, latest_md_src, latest, context):
         'red_team_protocol': context.get('red_team_protocol', []),
         'sell_checklist': context.get('sell_checklist', []),
         'current_watchpoints': context.get('current_watchpoints', []),
+        'decision_history': context.get('decision_history', []),
     }
     (data_dir / 'dashboard_meta.json').write_text(json.dumps(dashboard_meta, ensure_ascii=False, indent=2), encoding='utf-8')
+    korean_stock_cache = build_korean_stock_cache(latest_public)
+    (data_dir / 'korean_stock_cache.json').write_text(json.dumps(korean_stock_cache, ensure_ascii=False, indent=2), encoding='utf-8')
 
     history_path = data_dir / 'history.json'
     if history_path.exists():
@@ -156,10 +290,10 @@ def write_public_files(latest_json_src, latest_md_src, latest, context):
         'synced_at': datetime.now().astimezone().isoformat(timespec='seconds'),
         'report_source': str(report_src),
         'public_dir': str(public_dir),
-        'data_files': ['latest.json', 'latest.md', 'history.json', 'dashboard_meta.json'],
+        'data_files': ['latest.json', 'latest.md', 'history.json', 'dashboard_meta.json', 'korean_stock_cache.json'],
     }
     (public_dir / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
-    return manifest
+    return manifest, latest_public, history, dashboard_meta, korean_stock_cache
 
 
 def guess_tab_key(symbol, market_type, profile):
@@ -218,7 +352,120 @@ def find_context_trade_note(order, context_positions):
     return ''
 
 
-def sync_supabase(latest, context):
+def normalize_timestamp(value, fallback=None):
+    if not value:
+        return fallback or datetime.now().astimezone().isoformat(timespec='seconds')
+    text = str(value)
+    if len(text) == 10:
+        return f'{text}T00:00:00+09:00'
+    return text
+
+
+def build_runtime_config_rows(context, now_iso):
+    return [
+        {'key': 'project', 'value': context.get('project', {}), 'updated_at': now_iso},
+        {'key': 'investor_profile', 'value': context.get('investor_profile', {}), 'updated_at': now_iso},
+        {'key': 'red_team_protocol', 'value': context.get('red_team_protocol', []), 'updated_at': now_iso},
+        {'key': 'sell_checklist', 'value': context.get('sell_checklist', []), 'updated_at': now_iso},
+        {'key': 'current_watchpoints', 'value': context.get('current_watchpoints', []), 'updated_at': now_iso},
+        {'key': 'decision_history', 'value': context.get('decision_history', []), 'updated_at': now_iso},
+    ]
+
+
+def build_snapshot_rows(latest, history, now_iso):
+    rows = {}
+    for item in history:
+        generated_at = normalize_timestamp(item.get('date'), now_iso)
+        rows[generated_at] = {
+            'generated_at': generated_at,
+            'note': item.get('note') or '',
+            'summary': item.get('summary') or {},
+            'positions': item.get('positions') or [],
+            'latest': {},
+            'metrics': {},
+            'advice': [],
+            'cautions': [],
+            'next_actions': [],
+            'headline': {},
+            'source': 'history_seed',
+            'updated_at': now_iso,
+        }
+
+    latest_generated_at = normalize_timestamp(latest.get('generated_at'), now_iso)
+    rows[latest_generated_at] = {
+        'generated_at': latest_generated_at,
+        'note': '자동 수집 스냅샷',
+        'summary': {
+            'total_asset': latest.get('headline', {}).get('total_asset'),
+            'profit': latest.get('headline', {}).get('profit'),
+            'profit_rate': latest.get('headline', {}).get('profit_rate'),
+        },
+        'positions': latest.get('positions', []),
+        'latest': latest,
+        'metrics': latest.get('metrics', {}),
+        'advice': latest.get('advice', []),
+        'cautions': latest.get('cautions', []),
+        'next_actions': latest.get('next_actions', []),
+        'headline': latest.get('headline', {}),
+        'source': 'tossctl',
+        'updated_at': now_iso,
+    }
+    return list(rows.values())
+
+
+def build_market_cache_rows(korean_stock_cache, latest_positions, now_iso):
+    rows = []
+    latest_map = {item.get('symbol'): item for item in latest_positions}
+    for symbol, payload in korean_stock_cache.items():
+        latest_item = latest_map.get(symbol, {})
+        rows.append({
+            'cache_key': symbol,
+            'symbol': symbol,
+            'market': payload.get('market') or latest_item.get('market_type'),
+            'market_code': payload.get('market_code') or latest_item.get('market_code'),
+            'payload': payload,
+            'updated_at': now_iso,
+        })
+    return rows
+
+
+def build_news_query(position, profile):
+    display_name = profile.get('display_name') or position.get('name') or position.get('symbol')
+    symbol = position.get('symbol') or ''
+    if position.get('market_type') == 'US_STOCK':
+        return f'{display_name} stock'
+    return f'{display_name} 주식'
+
+
+def build_news_rows(latest, profile_rows, now_iso):
+    rows = []
+    profile_map = {row['symbol']: row for row in profile_rows}
+    for position in latest.get('positions', []):
+        symbol = position.get('symbol')
+        if not symbol:
+            continue
+        profile = profile_map.get(symbol, {})
+        query = build_news_query(position, profile)
+        display_name = profile.get('display_name') or position.get('name') or symbol
+        for item in fetch_google_news(query, limit=3):
+            if not item.get('url'):
+                continue
+            rows.append({
+                'symbol': symbol,
+                'display_name': display_name,
+                'query': query,
+                'title': item.get('title') or display_name,
+                'summary': item.get('summary') or '',
+                'source': item.get('source') or 'Google News',
+                'url': item.get('url'),
+                'published_at': item.get('published_at'),
+                'raw': item.get('raw') or {},
+                'updated_at': now_iso,
+            })
+    return rows
+
+
+def sync_supabase(latest, context, history, korean_stock_cache):
     config = supabase_config()
     if not config:
         return {'status': 'skipped', 'reason': 'missing_supabase_env'}
@@ -258,6 +505,32 @@ def sync_supabase(latest, context):
         body=profile_rows,
     )
 
+    request_supabase(
+        'POST',
+        'dashboard_runtime_config',
+        params={'on_conflict': 'key'},
+        headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
+        body=build_runtime_config_rows(context, now_iso),
+    )
+
+    request_supabase(
+        'POST',
+        'dashboard_snapshots',
+        params={'on_conflict': 'generated_at'},
+        headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
+        body=build_snapshot_rows(latest, history, now_iso),
+    )
+
+    market_cache_rows = build_market_cache_rows(korean_stock_cache, latest.get('positions', []), now_iso)
+    if market_cache_rows:
+        request_supabase(
+            'POST',
+            'dashboard_market_cache',
+            params={'on_conflict': 'cache_key'},
+            headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
+            body=market_cache_rows,
+        )
+
     completed_orders = run_json(['tossctl', 'orders', 'completed', '--output', 'json'])
     trade_rows = []
     for order in completed_orders:
@@ -282,31 +555,54 @@ def sync_supabase(latest, context):
             'updated_at': now_iso,
         })
 
+    if trade_rows:
+        request_supabase(
+            'POST',
+            'dashboard_trade_history',
+            params={'on_conflict': 'trade_id'},
+            headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
+            body=trade_rows,
+        )
+
+    news_rows = build_news_rows(latest, profile_rows, now_iso)
+    if news_rows:
+        request_supabase(
+            'POST',
+            'dashboard_news_items',
+            params={'on_conflict': 'url'},
+            headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
+            body=news_rows,
+        )
+
+    stale_cutoff = (datetime.now().astimezone() - timedelta(days=7)).isoformat(timespec='seconds')
     request_supabase(
-        'POST',
-        'dashboard_trade_history',
-        params={'on_conflict': 'trade_id'},
-        headers={'Prefer': 'resolution=merge-duplicates,return=representation'},
-        body=trade_rows,
+        'DELETE',
+        'dashboard_news_items',
+        params={'updated_at': f'lt.{stale_cutoff}'},
+        headers={'Prefer': 'return=minimal'},
     )
 
     return {
         'status': 'ok',
         'asset_profiles': len(profile_rows),
         'trade_rows': len(trade_rows),
+        'snapshot_rows': len(build_snapshot_rows(latest, history, now_iso)),
+        'market_cache_rows': len(market_cache_rows),
+        'news_rows': len(news_rows),
     }
 
 
 def main():
     latest_json_src, latest_md_src, context_src, latest, context = load_sources()
-    manifest = write_public_files(latest_json_src, latest_md_src, latest, context)
-    supabase_result = sync_supabase(latest, context)
+    manifest, latest_public, history, dashboard_meta, korean_stock_cache = write_public_files(latest_json_src, latest_md_src, latest, context)
+    supabase_result = sync_supabase(latest_public, context, history, korean_stock_cache)
     print(json.dumps({
         'status': 'ok',
         'public_dir': str(public_dir),
         'synced_files': manifest['data_files'],
         'synced_at': manifest['synced_at'],
         'supabase': supabase_result,
+        'dashboard_meta': dashboard_meta,
     }, ensure_ascii=False))
 
 

@@ -56,6 +56,50 @@ create table if not exists rich_dad_dashboard.dashboard_journal_entries (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists rich_dad_dashboard.dashboard_runtime_config (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists rich_dad_dashboard.dashboard_snapshots (
+  generated_at timestamptz primary key,
+  note text not null default '',
+  summary jsonb not null default '{}'::jsonb,
+  positions jsonb not null default '[]'::jsonb,
+  latest jsonb not null default '{}'::jsonb,
+  metrics jsonb not null default '{}'::jsonb,
+  advice jsonb not null default '[]'::jsonb,
+  cautions jsonb not null default '[]'::jsonb,
+  next_actions jsonb not null default '[]'::jsonb,
+  headline jsonb not null default '{}'::jsonb,
+  source text not null default 'tossctl',
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists rich_dad_dashboard.dashboard_market_cache (
+  cache_key text primary key,
+  symbol text not null,
+  market text,
+  market_code text,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists rich_dad_dashboard.dashboard_news_items (
+  id bigint generated always as identity primary key,
+  symbol text not null,
+  display_name text not null,
+  query text not null default '',
+  title text not null,
+  summary text not null default '',
+  source text not null default '',
+  url text not null unique,
+  published_at timestamptz,
+  raw jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 insert into rich_dad_dashboard.dashboard_auth_config (key, password_hash, password_changed)
 values ('dashboard_password', 'scrypt$bd977546916af59e14dcbe5e4d42ae5b$dd4e7f83ff1122ce2e0b3293698ac255e8d15ef6da41eaa4c391d2423326bd827b0963597fa0693a7fe511e527ddfd64550f2e58d52919a831ac95c6a305783a', false)
 on conflict (key) do nothing;
@@ -72,6 +116,10 @@ alter table rich_dad_dashboard.dashboard_auth_config enable row level security;
 alter table rich_dad_dashboard.dashboard_asset_profiles enable row level security;
 alter table rich_dad_dashboard.dashboard_trade_history enable row level security;
 alter table rich_dad_dashboard.dashboard_journal_entries enable row level security;
+alter table rich_dad_dashboard.dashboard_runtime_config enable row level security;
+alter table rich_dad_dashboard.dashboard_snapshots enable row level security;
+alter table rich_dad_dashboard.dashboard_market_cache enable row level security;
+alter table rich_dad_dashboard.dashboard_news_items enable row level security;
 
 drop policy if exists "deny_all_auth_config" on rich_dad_dashboard.dashboard_auth_config;
 create policy "deny_all_auth_config"
@@ -97,6 +145,34 @@ with check (false);
 drop policy if exists "deny_all_journal_entries" on rich_dad_dashboard.dashboard_journal_entries;
 create policy "deny_all_journal_entries"
 on rich_dad_dashboard.dashboard_journal_entries
+for all
+using (false)
+with check (false);
+
+drop policy if exists "deny_all_runtime_config" on rich_dad_dashboard.dashboard_runtime_config;
+create policy "deny_all_runtime_config"
+on rich_dad_dashboard.dashboard_runtime_config
+for all
+using (false)
+with check (false);
+
+drop policy if exists "deny_all_snapshots" on rich_dad_dashboard.dashboard_snapshots;
+create policy "deny_all_snapshots"
+on rich_dad_dashboard.dashboard_snapshots
+for all
+using (false)
+with check (false);
+
+drop policy if exists "deny_all_market_cache" on rich_dad_dashboard.dashboard_market_cache;
+create policy "deny_all_market_cache"
+on rich_dad_dashboard.dashboard_market_cache
+for all
+using (false)
+with check (false);
+
+drop policy if exists "deny_all_news_items" on rich_dad_dashboard.dashboard_news_items;
+create policy "deny_all_news_items"
+on rich_dad_dashboard.dashboard_news_items
 for all
 using (false)
 with check (false);

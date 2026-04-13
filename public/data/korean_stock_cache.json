@@ -1,0 +1,42 @@
+{
+  "A069500": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "069500",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  },
+  "A000660": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "000660",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  },
+  "A005930": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "005930",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  },
+  "A463250": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "463250",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  },
+  "A458730": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "458730",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  }
+}
