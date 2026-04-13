@@ -2,38 +2,35 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Rich Dad Project Dashboard</title>
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, max-snippet:0, max-image-preview:none, max-video-preview:0">
-  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-  <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-  <meta name="ai" content="noindex, nofollow">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div id="auth-overlay" class="auth-overlay">
     <div class="auth-card glass">
       <div class="eyebrow">Private Dashboard</div>
-      <h1>Rich Dad Project</h1>
-      <p class="muted">이 페이지는 데이브의 개인 투자 운영 대시보드야. 첫 로그인 시 비밀번호를 반드시 바꿔줘.</p>
+      <h1>부자 아빠 프로젝트</h1>
+      <p class="muted">이 페이지는 데이브의 투자 운영 시스템이에요. 로그인 후 오늘의 판단, 투자일기, 종목노트를 분리해서 볼 수 있어요.</p>
       <form id="login-form" class="stack gap-16">
         <input id="password-input" class="input" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
-        <button class="btn primary" type="submit">대시보드 열기</button>
+        <button class="btn primary wide" type="submit">대시보드 열기</button>
       </form>
       <div id="login-error" class="error"></div>
-      <div class="footnote">초기 비밀번호는 12345로 설정되어 있어. 첫 로그인 뒤 바로 변경이 필요해.</div>
+      <div class="footnote">초기 비밀번호는 12345예요. 첫 로그인 뒤 바로 변경할 수 있어요.</div>
     </div>
   </div>
 
   <div id="password-reset-modal" class="modal hidden">
     <div class="modal-card glass">
       <div class="eyebrow">First Login</div>
-      <h2>비밀번호 변경이 필요해</h2>
-      <p class="muted">현재는 초기 비밀번호가 설정되어 있어. 계속 진행하려면 새 비밀번호를 저장해줘.</p>
+      <h2>비밀번호 변경이 필요해요</h2>
+      <p class="muted">현재는 초기 비밀번호가 설정되어 있어요. 계속 진행하려면 새 비밀번호를 저장해줘요.</p>
       <form id="force-reset-form" class="stack gap-12">
         <input id="force-new-password" class="input" type="password" placeholder="새 비밀번호">
         <input id="force-confirm-password" class="input" type="password" placeholder="새 비밀번호 확인">
-        <button class="btn primary" type="submit">새 비밀번호 저장</button>
+        <button class="btn primary wide" type="submit">새 비밀번호 저장</button>
       </form>
       <div id="force-reset-error" class="error"></div>
     </div>
@@ -42,18 +39,20 @@
   <div id="settings-modal" class="modal hidden">
     <div class="modal-card glass">
       <div class="modal-head">
-        <h2>보안 설정</h2>
+        <div>
+          <div class="eyebrow">Security</div>
+          <h2>보안 설정</h2>
+        </div>
         <button id="settings-close" class="icon-btn" type="button">✕</button>
       </div>
       <form id="settings-form" class="stack gap-12">
         <input id="current-password" class="input" type="password" placeholder="현재 비밀번호">
         <input id="new-password" class="input" type="password" placeholder="새 비밀번호">
         <input id="confirm-password" class="input" type="password" placeholder="새 비밀번호 확인">
-        <button class="btn primary" type="submit">비밀번호 변경</button>
+        <button class="btn primary wide" type="submit">비밀번호 변경</button>
       </form>
       <div id="settings-error" class="error"></div>
       <div id="settings-success" class="success"></div>
-      <div class="footnote">비밀번호는 현재 브라우저의 로컬 저장소에 저장돼. 진짜 보안이 아니라 개인용 잠금장치에 가까워.</div>
     </div>
   </div>
 
@@ -62,97 +61,227 @@
       <div class="hero-bg"></div>
       <div class="container hero-content">
         <div class="hero-main glass">
-          <div class="eyebrow">부자 아빠 프로젝트 · Life CFO Dashboard</div>
-          <div class="hero-topline">
+          <div class="hero-head">
             <div>
-              <h1>오늘의 포트폴리오 판단</h1>
+              <div class="eyebrow">부자 아빠 프로젝트 · Life CFO Dashboard</div>
+              <h1>포트폴리오 운영판</h1>
               <p id="hero-subtitle" class="muted"></p>
             </div>
             <div class="hero-actions">
-              <a id="dashboard-link" class="btn ghost" href="#positions">보유 종목 보기</a>
+              <button id="refresh-dashboard" class="btn ghost" type="button">새로고침</button>
               <button id="open-settings" class="btn ghost" type="button">보안 설정</button>
             </div>
           </div>
           <div id="headline-grid" class="headline-grid"></div>
-          <div class="notice-row">
-            <div class="notice warning"><strong>중요</strong><span id="security-note">이 페이지는 private 운영 대시보드야. 링크 공유는 금지.</span></div>
-            <div class="notice"><strong>원칙</strong><span id="project-goal"></span></div>
+          <div class="hero-bottom-row">
+            <div class="notice warning"><strong>중요</strong><span id="security-note">이 페이지는 private 운영 대시보드예요. 링크 공유는 금지예요.</span></div>
+            <div class="notice"><strong>목표</strong><span id="project-goal"></span></div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="container section" id="today-actions">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Morning Brief</div>
-          <h2>지금 가장 먼저 볼 것</h2>
-        </div>
-      </div>
-      <div id="action-grid" class="action-grid"></div>
+    <section class="container tabs-shell">
+      <nav id="dashboard-tabs" class="dashboard-tabs"></nav>
     </section>
 
-    <section class="container section">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Strategy Radar</div>
-          <h2>오늘의 경고와 체크포인트</h2>
+    <section id="tab-judgment" class="tab-panel">
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Today</div>
+            <h2>오늘의 판단</h2>
+          </div>
         </div>
-      </div>
-      <div class="two-col">
-        <div class="glass panel">
-          <h3>레드팀 질문</h3>
-          <ul id="red-team-list" class="bullet-list"></ul>
+        <div id="action-grid" class="action-grid"></div>
+      </section>
+
+      <section class="container section">
+        <div class="analytics-grid">
+          <article class="panel chart-card glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Portfolio Trend</div>
+                <h3>포트폴리오 추이</h3>
+              </div>
+            </div>
+            <div id="portfolio-trend-chart" class="chart-box"></div>
+          </article>
+          <article class="panel chart-card glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Allocation</div>
+                <h3>현재 비중 구조</h3>
+              </div>
+            </div>
+            <div id="allocation-chart" class="allocation-chart"></div>
+          </article>
         </div>
-        <div class="glass panel">
-          <h3>활성 체크포인트</h3>
-          <ul id="watchpoint-list" class="bullet-list"></ul>
+      </section>
+
+      <section class="container section">
+        <div class="two-col">
+          <article class="panel glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Radar</div>
+                <h3>레드팀 질문</h3>
+              </div>
+            </div>
+            <ul id="red-team-list" class="bullet-list"></ul>
+          </article>
+          <article class="panel glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Watchpoints</div>
+                <h3>활성 체크포인트</h3>
+              </div>
+            </div>
+            <ul id="watchpoint-list" class="bullet-list"></ul>
+          </article>
         </div>
-      </div>
+      </section>
+
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Trade Feed</div>
+            <h2>최근 매수/매도 히스토리</h2>
+          </div>
+        </div>
+        <div id="recent-trades" class="trade-feed"></div>
+      </section>
     </section>
 
-    <section class="container section" id="positions">
-      <div class="section-head sticky-head">
-        <div>
-          <div class="eyebrow">Portfolio Cards</div>
-          <h2>왜 샀는지 · 언제 팔지 · 지금 뭘 할지</h2>
+    <section id="tab-journal" class="tab-panel hidden">
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Investment Journal</div>
+            <h2>투자일기</h2>
+          </div>
         </div>
-      </div>
-      <div id="positions-grid" class="positions-grid"></div>
+        <div class="journal-layout">
+          <article class="panel glass journal-composer-card">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Write</div>
+                <h3>오늘의 기록 남기기</h3>
+              </div>
+            </div>
+            <form id="journal-form" class="stack gap-12">
+              <input id="journal-id" type="hidden">
+              <div class="input-row two">
+                <input id="journal-date" class="input" type="date">
+                <input id="journal-mood" class="input" type="text" placeholder="감정/상태 (예: 차분, 경계, 공격적 아님)">
+              </div>
+              <input id="journal-title" class="input" type="text" placeholder="제목">
+              <input id="journal-tags" class="input" type="text" placeholder="태그 (쉼표로 구분)">
+              <input id="journal-symbols" class="input" type="text" placeholder="관련 종목 (예: A005930, VOO)">
+              <textarea id="journal-body" class="input textarea" placeholder="오늘의 판단, 배운 점, 다음 행동을 자유롭게 적어줘요."></textarea>
+              <div class="form-actions">
+                <button class="btn primary" type="submit">저장</button>
+                <button id="journal-reset" class="btn ghost" type="button">초기화</button>
+              </div>
+            </form>
+            <div id="journal-form-status" class="success"></div>
+          </article>
+          <article class="panel glass">
+            <div class="panel-topline">
+              <div>
+                <div class="eyebrow">Timeline</div>
+                <h3>저장된 투자일기</h3>
+              </div>
+            </div>
+            <div id="journal-list" class="journal-list"></div>
+          </article>
+        </div>
+      </section>
     </section>
 
-    <section class="container section">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Timeline</div>
-          <h2>결정 히스토리</h2>
+    <section id="tab-notes" class="tab-panel hidden">
+      <section class="container section">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Asset Notes</div>
+            <h2>종목노트</h2>
+          </div>
         </div>
-      </div>
-      <div id="timeline" class="timeline"></div>
-    </section>
+        <div class="notes-layout">
+          <aside class="panel glass notes-sidebar">
+            <div class="panel-topline compact">
+              <div>
+                <div class="eyebrow">Assets</div>
+                <h3>보유 종목</h3>
+              </div>
+            </div>
+            <div id="symbol-chip-list" class="symbol-chip-list"></div>
+          </aside>
+          <div class="notes-main">
+            <article class="panel glass note-summary-card">
+              <div class="panel-topline">
+                <div>
+                  <div class="eyebrow">Selected</div>
+                  <h3 id="selected-asset-title">종목 선택</h3>
+                </div>
+                <div id="selected-asset-badge" class="badge"></div>
+              </div>
+              <div id="selected-asset-metrics" class="mini-grid"></div>
+              <div class="chart-split">
+                <div class="chart-card-inner">
+                  <div class="eyebrow">Price / Snapshot</div>
+                  <div id="selected-asset-chart" class="chart-box large"></div>
+                </div>
+                <div class="chart-card-inner">
+                  <div class="eyebrow">Trade Timeline</div>
+                  <div id="selected-trade-list" class="trade-feed compact"></div>
+                </div>
+              </div>
+            </article>
 
-    <section class="container section">
-      <div class="section-head">
-        <div>
-          <div class="eyebrow">Operating System</div>
-          <h2>원칙과 매도 체크리스트</h2>
+            <article class="panel glass">
+              <div class="panel-topline">
+                <div>
+                  <div class="eyebrow">Edit</div>
+                  <h3>종목 메모 수정</h3>
+                </div>
+              </div>
+              <form id="asset-note-form" class="stack gap-12">
+                <input id="asset-symbol" type="hidden">
+                <div class="input-row two">
+                  <input id="asset-display-name" class="input" type="text" placeholder="표시 이름">
+                  <select id="asset-tab-key" class="input"></select>
+                </div>
+                <input id="asset-role" class="input" type="text" placeholder="역할 / 한 줄 정의">
+                <textarea id="asset-why-bought" class="input textarea small" placeholder="왜 샀는지 (줄바꿈으로 구분)"></textarea>
+                <textarea id="asset-why-sold" class="input textarea small" placeholder="왜 팔았는지 / 팔 예정인지"></textarea>
+                <textarea id="asset-review-triggers" class="input textarea small" placeholder="언제 다시 볼 것인지 (줄바꿈으로 구분)"></textarea>
+                <textarea id="asset-next-action" class="input textarea small" placeholder="지금 해야 할 일"></textarea>
+                <textarea id="asset-memo" class="input textarea" placeholder="자유 메모"></textarea>
+                <div class="form-actions">
+                  <button class="btn primary" type="submit">종목노트 저장</button>
+                </div>
+              </form>
+              <div id="asset-note-status" class="success"></div>
+            </article>
+          </div>
         </div>
-      </div>
-      <div class="two-col">
-        <div class="glass panel">
-          <h3>핵심 원칙</h3>
-          <ul id="principles-list" class="bullet-list"></ul>
-        </div>
-        <div class="glass panel">
-          <h3>매도 체크리스트</h3>
-          <ol id="sell-checklist" class="bullet-list ordered"></ol>
-        </div>
-      </div>
+      </section>
     </section>
 
     <section class="container section footer-section">
-      <div class="glass footer-panel">
-        <div class="eyebrow">Dashboard Meta</div>
+      <div class="panel glass footer-panel">
+        <div class="eyebrow">Operating System</div>
+        <div class="two-col footer-grid">
+          <div>
+            <h3>핵심 원칙</h3>
+            <ul id="principles-list" class="bullet-list"></ul>
+          </div>
+          <div>
+            <h3>매도 체크리스트</h3>
+            <ol id="sell-checklist" class="bullet-list ordered"></ol>
+          </div>
+        </div>
         <div id="footer-meta" class="footer-meta"></div>
       </div>
     </section>

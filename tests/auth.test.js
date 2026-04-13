@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { hashPassword, verifyPassword } from '../lib/auth.js';
 import { fetchPasswordConfig } from '../lib/supabase.js';
+import { createSessionToken, verifySessionToken } from '../lib/session.js';
 
 test('hashPassword encodes password with salt and verifyPassword accepts the original password', () => {
   const encoded = hashPassword('12345');
@@ -47,4 +48,12 @@ test('fetchPasswordConfig includes upstream Supabase response body in thrown err
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('session tokens round-trip and validate', () => {
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-secret';
+  const token = createSessionToken({ scope: 'dashboard' });
+  const payload = verifySessionToken(token);
+  assert.equal(payload.authenticated, true);
+  assert.equal(payload.scope, 'dashboard');
 });

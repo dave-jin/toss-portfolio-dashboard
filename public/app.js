@@ -1,257 +1,640 @@
 const SESSION_AUTH_KEY = 'rich-dad-dashboard-authenticated';
 
-const state = { latest: null, context: null, history: null, auth: { needsPasswordChange: true } };
+const state = {
+  auth: { needsPasswordChange: true },
+  latest: null,
+  history: [],
+  project: {},
+  investorProfile: {},
+  redTeamProtocol: [],
+  sellChecklist: [],
+  currentWatchpoints: [],
+  assetProfiles: {},
+  trades: [],
+  journals: [],
+  appTabs: [],
+  assetTabOptions: [],
+  ui: {
+    activeTab: sessionStorage.getItem('dashboard-active-tab') || 'judgment',
+    selectedSymbol: null,
+    koreanChartCache: {},
+  },
+};
 
 const qs = (sel) => document.querySelector(sel);
 const qsa = (sel) => [...document.querySelectorAll(sel)];
 const won = (v) => `${Math.round(Number(v || 0)).toLocaleString('ko-KR')}원`;
-const pct = (v) => `${(Number(v || 0) * 100).toFixed(2)}%`;
 const signedWon = (v) => `${Number(v || 0) > 0 ? '+' : ''}${Math.round(Number(v || 0)).toLocaleString('ko-KR')}원`;
+const pct = (v) => `${(Number(v || 0) * 100).toFixed(2)}%`;
 const signedPct = (v) => `${Number(v || 0) > 0 ? '+' : ''}${(Number(v || 0) * 100).toFixed(2)}%`;
 const dateText = (v) => (v || '').replace('T', ' ').slice(0, 16);
+const isoDate = (v) => (v || '').slice(0, 10);
+const escapeHtml = (v='') => String(v)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;');
+
+async function jsonRequest(url, options = {}) {
+  const res = await fetch(url, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options,
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(payload.error || `request_failed_${res.status}`);
+  return payload;
+}
 
 async function passwordApi(method, body) {
   const res = await fetch('/api/auth/password', {
     method,
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
   return res.json();
 }
 
-function visibleError(message, fallback) {
-  return message || fallback;
-}
-
 function setSessionAuth(ok) {
   sessionStorage.setItem(SESSION_AUTH_KEY, ok ? 'true' : 'false');
 }
-function isSessionAuthed() { return sessionStorage.getItem(SESSION_AUTH_KEY) === 'true'; }
-
+function isSessionAuthed() {
+  return sessionStorage.getItem(SESSION_AUTH_KEY) === 'true';
+}
 function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
+function visibleError(message, fallback) { return message || fallback; }
 
-function sparkline(values, positive = true) {
-  const points = values.filter(v => Number.isFinite(v)).map(Number);
-  if (points.length < 2) return '<div class="muted">히스토리 데이터가 아직 충분하지 않아.</div>';
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const width = 420;
-  const height = 100;
+function splitLines(value) {
+  return String(value || '').split('\n').map(item => item.trim()).filter(Boolean);
+}
+
+function joinLines(list) {
+  return (list || []).filter(Boolean).join('\n');
+}
+
+function parseCommaList(value) {
+  return String(value || '').split(',').map(item => item.trim()).filter(Boolean);
+}
+
+function getLatestPositions() {
+  return (state.latest?.positions || []).slice().sort((a, b) => Number(b.market_value || 0) - Number(a.market_value || 0));
+}
+
+function getProfile(symbol) {
+  return state.assetProfiles?.[symbol] || null;
+}
+
+function getSelectedPosition() {
+  const positions = getLatestPositions();
+  return positions.find(item => item.symbol === state.ui.selectedSymbol) || positions[0] || null;
+}
+
+function getTradesForSymbol(symbol) {
+  return (state.trades || []).filter(item => item.symbol === symbol).sort((a, b) => String(b.submitted_at || b.order_date).localeCompare(String(a.submitted_at || a.order_date)));
+}
+
+function getPortfolioSeries() {
+  return (state.history || []).map((item) => ({
+    label: isoDate(item.date),
+    value: Number(item.summary?.total_asset || item.positions?.reduce((sum, pos) => sum + Number(pos.market_value || 0), 0) || 0),
+  })).filter(item => Number.isFinite(item.value) && item.value > 0);
+}
+
+function getAssetSeries(symbol) {
+  return (state.history || []).map((item) => {
+    const found = (item.positions || []).find((pos) => pos.symbol === symbol);
+    return found ? {
+      label: isoDate(item.date),
+      value: Number(found.market_value || found.current_price || 0),
+    } : null;
+  }).filter(Boolean).filter(item => Number.isFinite(item.value) && item.value > 0);
+}
+
+function toPath(series, width, height, padding) {
+  if (!series.length) return { line: '', fill: '', points: [] };
+  const values = series.map(item => item.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
   const range = max - min || 1;
-  const coords = points.map((v, i) => {
-    const x = (i / (points.length - 1)) * (width - 20) + 10;
-    const y = height - (((v - min) / range) * (height - 20) + 10);
-    return `${x},${y}`;
-  }).join(' ');
-  const stroke = positive ? '#79ecab' : '#ff9a9a';
-  return `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%" preserveAspectRatio="none">
-    <defs>
-      <linearGradient id="fill-${stroke.replace('#','')}" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0%" stop-color="${stroke}" stop-opacity="0.32"></stop>
-        <stop offset="100%" stop-color="${stroke}" stop-opacity="0"></stop>
-      </linearGradient>
-    </defs>
-    <polyline fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="${coords}"></polyline>
-  </svg>`;
+  const points = series.map((item, idx) => {
+    const x = padding + ((width - padding * 2) * idx) / Math.max(series.length - 1, 1);
+    const y = height - padding - (((item.value - min) / range) * (height - padding * 2));
+    return { x, y, value: item.value, label: item.label };
+  });
+  const line = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+  const fill = `${line} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`;
+  return { line, fill, points, min, max };
 }
 
-function historyForSymbol(symbol) {
-  return (state.history || []).map(item => {
-    const position = (item.positions || []).find(p => p.symbol === symbol);
-    return position ? { date: item.date, market_value: Number(position.market_value || 0), current_price: Number(position.current_price || 0) } : null;
-  }).filter(Boolean);
-}
-
-function nearestTrigger(playbook, position) {
-  const plan = playbook?.sell_plan || {};
-  const cp = Number(position.current_price || 0);
-  if (plan.target_1?.price_krw && cp) {
-    const gap = ((plan.target_1.price_krw - cp) / cp) * 100;
-    return gap > 0 ? `1차 목표까지 약 ${gap.toFixed(1)}% 남음` : `1차 목표 구간 진입`;
+function renderLineChart(el, series, { stroke = '#78a8ff', fill = '#78a8ff', title = '' } = {}) {
+  if (!el) return;
+  if (!series.length) {
+    el.innerHTML = '<div class="chart-empty">표시할 히스토리 데이터가 아직 충분하지 않아요.</div>';
+    return;
   }
-  if (plan.target_1?.price_usd && position.current_price_usd) {
-    const cpUsd = Number(position.current_price_usd);
-    const gap = ((plan.target_1.price_usd - cpUsd) / cpUsd) * 100;
-    return gap > 0 ? `1차 목표까지 약 ${gap.toFixed(1)}% 남음` : `1차 목표 구간 진입`;
-  }
-  return playbook?.next_best_action || '핵심 논거 유지 여부를 먼저 점검';
+  const width = 720;
+  const height = 280;
+  const padding = 26;
+  const { line, fill: fillPath, points, min, max } = toPath(series, width, height, padding);
+  const labels = [series[0], series[Math.floor(series.length / 2)], series[series.length - 1]];
+  const yTop = max;
+  const yBottom = min;
+  el.innerHTML = `
+    <svg class="chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-label="${escapeHtml(title)}">
+      <defs>
+        <linearGradient id="grad-${stroke.replace('#', '')}" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${fill}" stop-opacity="0.45"></stop>
+          <stop offset="100%" stop-color="${fill}" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+      <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="rgba(159,177,209,0.25)" stroke-width="1"></line>
+      <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(159,177,209,0.25)" stroke-width="1"></line>
+      <path class="chart-fill" d="${fillPath}" fill="url(#grad-${stroke.replace('#', '')})"></path>
+      <path class="chart-line" d="${line}" stroke="${stroke}"></path>
+      ${points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="3.5" fill="${stroke}"><title>${escapeHtml(point.label)} · ${Math.round(point.value).toLocaleString('ko-KR')}</title></circle>`).join('')}
+      <text class="chart-label" x="${padding}" y="${padding - 8}">${Math.round(yTop).toLocaleString('ko-KR')}</text>
+      <text class="chart-label" x="${padding}" y="${height - padding + 18}">${Math.round(yBottom).toLocaleString('ko-KR')}</text>
+      ${labels.map((item, idx) => {
+        const x = padding + ((width - padding * 2) * idx) / Math.max(labels.length - 1, 1);
+        return `<text class="chart-label" x="${x}" y="${height - 6}" text-anchor="middle">${escapeHtml(item.label)}</text>`;
+      }).join('')}
+    </svg>
+  `;
 }
 
-function actionCards() {
-  const latest = state.latest;
-  const ctx = state.context;
+function renderAllocation(el) {
+  const positions = getLatestPositions();
+  if (!el) return;
+  const total = positions.reduce((sum, item) => sum + Number(item.market_value || 0), 0);
+  if (!positions.length || !total) {
+    el.innerHTML = '<div class="chart-empty">비중 데이터를 불러오지 못했어요.</div>';
+    return;
+  }
+  const palette = ['#78a8ff', '#9d7cff', '#74f3a4', '#f7d56f', '#ff9a9a', '#61d9f5', '#f5a361'];
+  const bars = positions.map((item, idx) => {
+    const ratio = Number(item.market_value || 0) / total;
+    return `
+      <div class="mini-card">
+        <div class="mini-card-label">${escapeHtml(item.name)}</div>
+        <div class="mini-card-value">${(ratio * 100).toFixed(1)}%</div>
+        <div style="height:10px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden;margin-top:10px;">
+          <div style="width:${ratio * 100}%;height:100%;background:${palette[idx % palette.length]};"></div>
+        </div>
+        <div class="trade-meta">${won(item.market_value)}</div>
+      </div>
+    `;
+  }).join('');
+  el.innerHTML = `<div class="mini-grid">${bars}</div>`;
+}
+
+function renderHeadline() {
+  const latest = state.latest || {};
+  const headline = latest.headline || {};
+  const metrics = latest.metrics || {};
+  const top1 = metrics.top1 || null;
   const cards = [
-    {
-      kicker: '핵심 행동',
-      title: latest.next_actions?.[0] || '핵심 행동 정의 필요',
-      body: '오늘 해야 할 가장 작은 단위의 실행이야. 아이디어 추가보다 구조 정리에 가깝게 봐.'
-    },
-    {
-      kicker: '레드팀 넛지',
-      title: ctx.red_team_protocol?.[0] || '그 논거가 지금도 유효한가?',
-      body: '좋은 수익은 확신을 강화하지만, 구조를 흔드는 건 오히려 확신이 커진 순간이야.'
-    },
-    {
-      kicker: '오늘의 관찰',
-      title: latest.cautions?.[0] || '현재 큰 경고 신호는 제한적이야',
-      body: latest.advice?.[0] || '총자산보다 구조와 리스크 분산부터 본다.'
-    }
+    { label: '총자산', value: won(headline.total_asset), sub: `국내 ${won(headline.kr_total)} / 미국 ${won(headline.us_total)}` },
+    { label: '평가손익', value: signedWon(headline.profit), sub: signedPct(headline.profit_rate), tone: Number(headline.profit || 0) >= 0 ? 'good' : 'bad' },
+    { label: '현금 여력', value: `${won(metrics.cash_krw)} · $${Number(metrics.cash_usd || 0).toFixed(2)}`, sub: '유동성 원칙을 먼저 확인해요.' },
+    { label: '집중도', value: `${Number(metrics.top3_weight || 0) * 100 > 0 ? (Number(metrics.top3_weight || 0) * 100).toFixed(1) : '0.0'}%`, sub: top1 ? `비중 1위 ${top1.name} ${(Number(top1.weight || 0) * 100).toFixed(1)}%` : '핵심 종목 없음' },
   ];
-  qs('#action-grid').innerHTML = cards.map(card => `
-    <article class="action-card">
-      <div class="kicker">${card.kicker}</div>
+  qs('#headline-grid').innerHTML = cards.map((item) => `
+    <article class="metric-card ${item.tone || ''}">
+      <div>
+        <div class="label">${item.label}</div>
+        <div class="value">${item.value}</div>
+      </div>
+      <div class="sub">${item.sub}</div>
+    </article>
+  `).join('');
+  qs('#hero-subtitle').textContent = `생성 시각 ${dateText(latest.generated_at)} · ${state.project.goal || ''} · 판단 / 기록 / 메모를 분리해 한 번에 운영할 수 있게 정리했어요.`;
+  qs('#project-goal').textContent = state.project.goal || '-';
+}
+
+function renderActions() {
+  const advice = state.latest?.advice || [];
+  const cautions = state.latest?.cautions || [];
+  const nextActions = state.latest?.next_actions || [];
+  const cards = [
+    { kicker: '핵심 행동', title: nextActions[0] || '오늘의 우선 행동을 아직 만들지 못했어요.', body: '수익률보다 지금 가장 작은 실행 단위를 먼저 적어요.' },
+    { kicker: '판단 메모', title: advice[0] || '오늘의 핵심 해석을 불러오는 중이에요.', body: advice[1] || '다음 행동은 항상 포트폴리오 구조를 함께 봐야 해요.' },
+    { kicker: '주의할 점', title: cautions[0] || '지금 큰 경고 신호는 제한적이에요.', body: cautions[1] || '판단 전에 레드팀 질문을 같이 확인해줘요.' },
+  ];
+  qs('#action-grid').innerHTML = cards.map((card) => `
+    <article class="action-card panel glass">
+      <div class="eyebrow">${card.kicker}</div>
       <div class="title">${card.title}</div>
       <div class="body">${card.body}</div>
     </article>
   `).join('');
 }
 
-function renderHeadline() {
-  const { latest, context } = state;
-  const metrics = [
-    { label: '총자산', value: won(latest.headline.total_asset), sub: `국내 ${won(latest.headline.kr_total)} / 미국 ${won(latest.headline.us_total)}` },
-    { label: '평가손익', value: signedWon(latest.headline.profit), sub: signedPct(latest.headline.profit_rate), tone: latest.headline.profit >= 0 ? 'good' : 'bad' },
-    { label: '오늘의 현금 여력', value: `${won(latest.metrics.cash_krw)} · $${Number(latest.metrics.cash_usd || 0).toFixed(2)}`, sub: '유동성 절대 훼손 금지 원칙 확인' },
-    { label: '집중도', value: `${(latest.metrics.top3_weight * 100).toFixed(1)}%`, sub: `비중 1위 ${latest.metrics.top1?.name || '-'} ${(latest.metrics.top1?.weight * 100 || 0).toFixed(1)}%` }
-  ];
-  qs('#headline-grid').innerHTML = metrics.map(m => `
-    <article class="metric-card ${m.tone || ''}">
-      <div>
-        <div class="label">${m.label}</div>
-        <div class="value">${m.value}</div>
-      </div>
-      <div class="sub">${m.sub}</div>
-    </article>
-  `).join('');
-  qs('#hero-subtitle').textContent = `생성 시각 ${dateText(latest.generated_at)} · ${context.project.goal} · 브리핑 기준으로 다음 행동을 바로 정리해둔 상태야.`;
-  qs('#project-goal').textContent = context.project.goal;
-  qs('#dashboard-link').href = '#positions';
-}
-
 function renderLists() {
-  const { latest, context } = state;
-  qs('#red-team-list').innerHTML = context.red_team_protocol.map(item => `<li>${item}</li>`).join('');
-  qs('#watchpoint-list').innerHTML = [...context.current_watchpoints, ...(latest.cautions || [])].map(item => `<li>${item}</li>`).join('');
-  qs('#principles-list').innerHTML = context.investor_profile.principles.map(item => `<li>${item}</li>`).join('');
-  qs('#sell-checklist').innerHTML = context.sell_checklist.map(item => `<li>${item}</li>`).join('');
+  qs('#red-team-list').innerHTML = (state.redTeamProtocol || []).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  qs('#watchpoint-list').innerHTML = (state.currentWatchpoints || []).concat(state.latest?.cautions || []).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  qs('#principles-list').innerHTML = (state.investorProfile?.principles || []).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  qs('#sell-checklist').innerHTML = (state.sellChecklist || []).map(item => `<li>${escapeHtml(item)}</li>`).join('');
 }
 
-function renderPositions() {
-  const { latest, context } = state;
-  const grid = qs('#positions-grid');
-  grid.innerHTML = latest.positions.map(position => {
-    const key = position.symbol;
-    const playbook = context.positions[key] || context.positions[position.name] || null;
-    const history = historyForSymbol(key);
-    const values = history.map(item => item.market_value || item.current_price || 0);
-    const positive = Number(position.unrealized_pnl || 0) >= 0;
-    const chart = sparkline(values, positive);
-    const triggerSummary = nearestTrigger(playbook, position);
-    const why = (playbook?.why_bought || ['매수 논거 정리가 필요해']).map(item => `<li>${item}</li>`).join('');
-    const reviews = (playbook?.review_triggers || [playbook?.sell_plan?.stop_review || '핵심 논거 유지 여부 점검']).map(item => `<li>${item}</li>`).join('');
-    const buyHistory = (playbook?.buy_history || []).map(item => `<li><strong>${item.date}</strong> · ${item.note}${item.price ? ` / ${won(item.price)}` : ''}</li>`).join('') || '<li>편입 이력 없음</li>';
-    const target1 = playbook?.sell_plan?.target_1 ? `${playbook.sell_plan.target_1.price_krw ? won(playbook.sell_plan.target_1.price_krw) : '$' + playbook.sell_plan.target_1.price_usd} · ${playbook.sell_plan.target_1.note}` : (playbook?.sell_plan?.default || '-');
-    const target2 = playbook?.sell_plan?.target_2 ? `${playbook.sell_plan.target_2.price_krw ? won(playbook.sell_plan.target_2.price_krw) : '$' + playbook.sell_plan.target_2.price_usd} · ${playbook.sell_plan.target_2.note}` : (playbook?.sell_plan?.long_term || '-');
-    const stopReview = playbook?.sell_plan?.stop_review || playbook?.sell_plan?.reentry || '-';
+function renderRecentTrades() {
+  const el = qs('#recent-trades');
+  const trades = (state.trades || []).slice(0, 8);
+  if (!trades.length) {
+    el.innerHTML = '<div class="chart-empty">최근 주문 히스토리를 아직 불러오지 못했어요.</div>';
+    return;
+  }
+  el.innerHTML = trades.map(renderTradeCard).join('');
+}
+
+function renderTradeCard(trade) {
+  const sideClass = trade.side === 'buy' ? 'buy' : trade.side === 'sell' ? 'sell' : 'neutral';
+  const sideLabel = trade.side === 'buy' ? '매수' : trade.side === 'sell' ? '매도' : trade.side;
+  const qty = Number(trade.filled_quantity || trade.quantity || 0);
+  const price = Number(trade.average_execution_price || trade.price || 0);
+  return `
+    <article class="trade-card">
+      <div class="trade-card-head">
+        <div>
+          <h4>${escapeHtml(trade.display_name || trade.name || trade.symbol)}</h4>
+          <div class="trade-meta">${escapeHtml(trade.order_date || '')} · ${escapeHtml(trade.status || '')}</div>
+        </div>
+        <div class="trade-side ${sideClass}">${sideLabel}</div>
+      </div>
+      <div class="trade-stats">
+        <div class="trade-stat"><div class="trade-stat-label">수량</div><div class="trade-stat-value">${qty || '-'}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">체결가</div><div class="trade-stat-value">${price ? won(price) : '-'}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">시장</div><div class="trade-stat-value">${escapeHtml(trade.market || '-')}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">메모</div><div class="trade-stat-value">${trade.trade_note ? '저장됨' : '없음'}</div></div>
+      </div>
+      ${trade.trade_note ? `<div class="journal-body">${escapeHtml(trade.trade_note)}</div>` : ''}
+    </article>
+  `;
+}
+
+function renderJournalList() {
+  const el = qs('#journal-list');
+  const journals = state.journals || [];
+  if (!journals.length) {
+    el.innerHTML = '<div class="chart-empty">아직 투자일기가 없어요. 오늘의 판단을 짧게라도 남겨줘요.</div>';
+    return;
+  }
+  el.innerHTML = journals.map((item) => {
+    const tags = Array.isArray(item.tags) ? item.tags : [];
+    const symbols = Array.isArray(item.related_symbols) ? item.related_symbols : [];
     return `
-      <article class="position-card">
-        <div class="position-head">
-          <div class="position-title">
-            <h3>${position.name}</h3>
-            <div class="position-role">${playbook?.role || position.market_type}</div>
+      <article class="journal-item">
+        <div class="journal-head">
+          <div>
+            <h4>${escapeHtml(item.title)}</h4>
+            <div class="trade-meta">${escapeHtml(item.entry_date)}${item.mood ? ` · ${escapeHtml(item.mood)}` : ''}</div>
           </div>
-          <div class="badge">다음 판단 · ${triggerSummary}</div>
-        </div>
-        <div class="position-metrics">
-          <div class="mini"><div class="mini-label">평가금액</div><div class="mini-value">${won(position.market_value)}</div></div>
-          <div class="mini"><div class="mini-label">평가손익</div><div class="mini-value ${positive ? 'good' : 'bad'}">${signedWon(position.unrealized_pnl)}</div></div>
-          <div class="mini"><div class="mini-label">수익률</div><div class="mini-value ${positive ? 'good' : 'bad'}">${signedPct(position.profit_rate)}</div></div>
-          <div class="mini"><div class="mini-label">비중</div><div class="mini-value">${((position._weight || 0) * 100).toFixed(1)}%</div></div>
-        </div>
-        <div class="position-chart">${chart}</div>
-        <div class="position-grid-two">
-          <div class="info-block">
-            <h4>왜 샀는가</h4>
-            <ul>${why}</ul>
-          </div>
-          <div class="info-block">
-            <h4>언제 다시 볼 것인가</h4>
-            <ul>${reviews}</ul>
-          </div>
-          <div class="info-block">
-            <h4>편입 히스토리</h4>
-            <ul>${buyHistory}</ul>
-          </div>
-          <div class="info-block">
-            <h4>지금 해야 할 일</h4>
-            <ul><li>${playbook?.next_best_action || latest.next_actions?.[0] || '핵심 논거와 유동성부터 점검'}</li><li>${triggerSummary}</li></ul>
+          <div class="form-actions">
+            <button class="btn ghost journal-edit-btn" type="button" data-id="${item.id}">수정</button>
+            <button class="btn ghost journal-delete-btn" type="button" data-id="${item.id}">삭제</button>
           </div>
         </div>
-        <div class="trigger-grid">
-          <div class="trigger-box"><div class="trigger-label">1차 재검토</div><div class="trigger-value">${target1}</div></div>
-          <div class="trigger-box"><div class="trigger-label">2차 / 장기</div><div class="trigger-value">${target2}</div></div>
-          <div class="trigger-box"><div class="trigger-label">중단 / 손절 재검토</div><div class="trigger-value">${stopReview}</div></div>
-          <div class="trigger-box"><div class="trigger-label">오늘의 한 줄</div><div class="trigger-value">${triggerSummary}</div></div>
+        <div class="journal-tags">
+          ${tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
+          ${symbols.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
+        <div class="journal-body">${escapeHtml(item.body)}</div>
       </article>
     `;
   }).join('');
 }
 
-function renderTimeline() {
-  const timeline = qs('#timeline');
-  timeline.innerHTML = state.context.decision_history.slice().reverse().map(item => `
-    <article class="timeline-card">
-      <div class="timeline-date">${item.date}</div>
-      <div>
-        <h4>${item.symbol} · ${item.type === 'buy' ? '매수' : '매도'}</h4>
-        <p>${item.summary}</p>
-        <p class="muted">교훈: ${item.lesson}</p>
+function renderTabs() {
+  qs('#dashboard-tabs').innerHTML = (state.appTabs || []).map((tab) => `
+    <button class="tab-btn ${state.ui.activeTab === tab.key ? 'active' : ''}" type="button" data-tab="${tab.key}">${escapeHtml(tab.label)}</button>
+  `).join('');
+  qsa('.tab-panel').forEach((panel) => {
+    const key = panel.id.replace('tab-', '');
+    panel.classList.toggle('hidden', key !== state.ui.activeTab);
+  });
+}
+
+function selectSymbol(symbol) {
+  state.ui.selectedSymbol = symbol;
+  renderNotesTab();
+}
+
+function renderSymbolList() {
+  const el = qs('#symbol-chip-list');
+  const positions = getLatestPositions();
+  el.innerHTML = positions.map((item) => {
+    const profile = getProfile(item.symbol) || {};
+    const active = state.ui.selectedSymbol === item.symbol;
+    return `
+      <button class="symbol-chip ${active ? 'active' : ''}" type="button" data-symbol="${item.symbol}">
+        <div class="top"><span>${escapeHtml(item.name)}</span><span>${((Number(item.market_value || 0) / Math.max(1, positions.reduce((sum, pos) => sum + Number(pos.market_value || 0), 0))) * 100).toFixed(1)}%</span></div>
+        <div class="bottom">${escapeHtml(profile.role || profile.tab_key || item.market_type || '')}</div>
+      </button>
+    `;
+  }).join('');
+}
+
+async function renderSelectedAssetChart(position) {
+  const chartEl = qs('#selected-asset-chart');
+  if (!position) {
+    chartEl.innerHTML = '<div class="chart-empty">종목을 선택해줘요.</div>';
+    return;
+  }
+
+  if (position.market_type === 'KR_STOCK') {
+    const key = `${position.symbol}:${position.market_code || 'KSP'}`;
+    if (!state.ui.koreanChartCache[key]) {
+      try {
+        const payload = await jsonRequest(`/api/dashboard/korean-stock?symbol=${encodeURIComponent(position.symbol)}&market=${encodeURIComponent(position.market_code || 'KSP')}&days=18`);
+        state.ui.koreanChartCache[key] = payload;
+      } catch (error) {
+        state.ui.koreanChartCache[key] = { error: error.message };
+      }
+    }
+    const payload = state.ui.koreanChartCache[key];
+    if (payload?.series?.length) {
+      const series = payload.series.map((item) => ({ label: item.base_date, value: Number(item.close_price || 0) })).filter(item => item.value > 0);
+      renderLineChart(chartEl, series, { stroke: '#74f3a4', fill: '#74f3a4', title: position.name });
+      chartEl.insertAdjacentHTML('beforeend', `<div class="krx-footnote">KRX 공식 데이터 기준 / 투자 조언 아님</div>`);
+      return;
+    }
+  }
+
+  renderLineChart(chartEl, getAssetSeries(position.symbol), { stroke: '#9d7cff', fill: '#9d7cff', title: position.name });
+}
+
+function renderSelectedAssetMetrics(position, profile) {
+  const el = qs('#selected-asset-metrics');
+  if (!position) {
+    el.innerHTML = '';
+    return;
+  }
+  const cards = [
+    { label: '평가금액', value: won(position.market_value) },
+    { label: '평가손익', value: signedWon(position.unrealized_pnl), tone: Number(position.unrealized_pnl || 0) >= 0 ? 'good' : 'bad' },
+    { label: '수익률', value: signedPct(position.profit_rate), tone: Number(position.profit_rate || 0) >= 0 ? 'good' : 'bad' },
+    { label: '다음 행동', value: profile?.next_best_action || '메모를 입력해줘요.' },
+  ];
+  el.innerHTML = cards.map((item) => `
+    <div class="mini-card ${item.tone || ''}">
+      <div class="mini-card-label">${item.label}</div>
+      <div class="mini-card-value">${item.value}</div>
+    </div>
+  `).join('');
+}
+
+function fillAssetForm(position, profile) {
+  qs('#asset-symbol').value = position?.symbol || '';
+  qs('#asset-display-name').value = profile?.display_name || position?.name || '';
+  qs('#asset-role').value = profile?.role || '';
+  qs('#asset-why-bought').value = joinLines(profile?.why_bought || []);
+  qs('#asset-why-sold').value = profile?.why_sold || '';
+  qs('#asset-review-triggers').value = joinLines(profile?.review_triggers || []);
+  qs('#asset-next-action').value = profile?.next_best_action || '';
+  qs('#asset-memo').value = profile?.memo || '';
+  qs('#asset-tab-key').value = profile?.tab_key || 'watchlist';
+}
+
+function renderTradeListForSelected(symbol) {
+  const el = qs('#selected-trade-list');
+  const trades = getTradesForSymbol(symbol);
+  if (!trades.length) {
+    el.innerHTML = '<div class="chart-empty">이 종목의 매수/매도 히스토리가 아직 없어요.</div>';
+    return;
+  }
+  el.innerHTML = trades.map((trade) => `
+    <article class="trade-card">
+      <div class="trade-card-head">
+        <div>
+          <h4>${escapeHtml(trade.order_date || trade.submitted_at || '')}</h4>
+          <div class="trade-meta">${escapeHtml(trade.status || '')} · ${trade.side === 'buy' ? '매수' : trade.side === 'sell' ? '매도' : escapeHtml(trade.side || '-')}</div>
+        </div>
+        <div class="trade-side ${trade.side === 'buy' ? 'buy' : trade.side === 'sell' ? 'sell' : 'neutral'}">${trade.side === 'buy' ? '매수' : trade.side === 'sell' ? '매도' : escapeHtml(trade.side || '-')}</div>
+      </div>
+      <div class="trade-stats">
+        <div class="trade-stat"><div class="trade-stat-label">수량</div><div class="trade-stat-value">${Number(trade.filled_quantity || trade.quantity || 0) || '-'}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">체결가</div><div class="trade-stat-value">${Number(trade.average_execution_price || trade.price || 0) ? won(trade.average_execution_price || trade.price) : '-'}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">상태</div><div class="trade-stat-value">${escapeHtml(trade.status || '-')}</div></div>
+        <div class="trade-stat"><div class="trade-stat-label">종류</div><div class="trade-stat-value">${trade.side === 'buy' ? '매수' : trade.side === 'sell' ? '매도' : '-'}</div></div>
+      </div>
+      <div class="trade-note-box">
+        <textarea class="input textarea small trade-note-input" data-trade-id="${trade.trade_id}" placeholder="왜 샀는지 / 왜 팔았는지 메모를 남겨줘요.">${escapeHtml(trade.trade_note || '')}</textarea>
+        <div class="form-actions">
+          <button class="btn ghost save-trade-note-btn" type="button" data-trade-id="${trade.trade_id}">거래 메모 저장</button>
+        </div>
       </div>
     </article>
   `).join('');
 }
 
+async function renderNotesTab() {
+  const position = getSelectedPosition();
+  if (!position) return;
+  const profile = getProfile(position.symbol) || {};
+  renderSymbolList();
+  qs('#selected-asset-title').textContent = position.name;
+  qs('#selected-asset-badge').textContent = profile.tab_key || position.market_type || '-';
+  renderSelectedAssetMetrics(position, profile);
+  fillAssetForm(position, profile);
+  renderTradeListForSelected(position.symbol);
+  await renderSelectedAssetChart(position);
+}
+
 function renderFooter() {
-  const latest = state.latest;
-  const ctx = state.context;
   qs('#footer-meta').innerHTML = `
-    <div>마지막 생성 시각: ${dateText(latest.generated_at)}</div>
-    <div>운영 모델: ${ctx.investor_profile.style}</div>
-    <div>거시경제 분석 원칙: ${ctx.investor_profile.principles[0]} / ${ctx.macro_rule || ctx.investor_profile.macro_rule}</div>
-    <div>경고: 이 대시보드는 투자 자문이 아니라, 원칙·히스토리·현재 포지션을 함께 보는 운영 도구야.</div>
+    <div>마지막 생성 시각: ${escapeHtml(dateText(state.latest?.generated_at || ''))}</div>
+    <div>운영 스타일: ${escapeHtml(state.investorProfile?.style || '-')}</div>
+    <div>거시 원칙: ${escapeHtml(state.investorProfile?.macro_rule || '-')}</div>
+    <div>기록 원칙: 메모는 DB에 저장되고, 판단/투자일기/종목노트 탭에서 분리해서 볼 수 있어요.</div>
   `;
 }
 
-function openForceResetIfNeeded() {
-  if (state.auth.needsPasswordChange) show(qs('#password-reset-modal'));
+function renderJudgmentTab() {
+  renderActions();
+  renderLists();
+  renderRecentTrades();
+  renderLineChart(qs('#portfolio-trend-chart'), getPortfolioSeries(), { stroke: '#78a8ff', fill: '#78a8ff', title: '포트폴리오 추이' });
+  renderAllocation(qs('#allocation-chart'));
+}
+
+function renderAll() {
+  renderTabs();
+  renderHeadline();
+  renderJudgmentTab();
+  renderJournalList();
+  renderFooter();
+  renderNotesTab();
+}
+
+async function loadDashboard() {
+  const payload = await jsonRequest('/api/dashboard/bootstrap');
+  Object.assign(state, {
+    latest: payload.latest,
+    history: payload.history || [],
+    project: payload.project || {},
+    investorProfile: payload.investorProfile || {},
+    redTeamProtocol: payload.redTeamProtocol || [],
+    sellChecklist: payload.sellChecklist || [],
+    currentWatchpoints: payload.currentWatchpoints || [],
+    assetProfiles: payload.assetProfiles || {},
+    trades: payload.trades || [],
+    journals: payload.journals || [],
+    appTabs: payload.appTabs || [],
+    assetTabOptions: payload.assetTabOptions || [],
+  });
+  const positions = getLatestPositions();
+  if (!state.ui.selectedSymbol || !positions.find(item => item.symbol === state.ui.selectedSymbol)) {
+    state.ui.selectedSymbol = positions[0]?.symbol || null;
+  }
+  buildAssetTabOptions();
+}
+
+function buildAssetTabOptions() {
+  qs('#asset-tab-key').innerHTML = (state.assetTabOptions || []).map((item) => `<option value="${item.key}">${item.label}</option>`).join('');
 }
 
 function mountApp() {
   hide(qs('#auth-overlay'));
-  hide(qs('#password-reset-modal'));
   show(qs('#app'));
-  renderHeadline();
-  actionCards();
-  renderLists();
-  renderPositions();
-  renderTimeline();
-  renderFooter();
-  openForceResetIfNeeded();
+  renderAll();
+  if (state.auth.needsPasswordChange) show(qs('#password-reset-modal'));
 }
 
-async function loadData() {
-  const [latest, context, history, auth] = await Promise.all([
-    fetch('/data/latest.json', { cache: 'no-store' }).then(r => r.json()),
-    fetch('/data/investment_context.json', { cache: 'no-store' }).then(r => r.json()),
-    fetch('/data/history.json', { cache: 'no-store' }).then(r => r.json()),
-    passwordApi('GET')
-  ]);
-  state.latest = latest;
-  state.context = context;
-  state.history = history;
-  state.auth = auth || { needsPasswordChange: true };
+async function refreshDashboard() {
+  try {
+    await loadDashboard();
+    renderAll();
+  } catch (error) {
+    qs('#login-error').textContent = visibleError(error.message, '대시보드를 새로고침하지 못했어요.');
+  }
+}
+
+function hydrateJournalForm(item = null) {
+  qs('#journal-id').value = item?.id || '';
+  qs('#journal-date').value = item?.entry_date || new Date().toISOString().slice(0, 10);
+  qs('#journal-mood').value = item?.mood || '';
+  qs('#journal-title').value = item?.title || '';
+  qs('#journal-tags').value = (item?.tags || []).join(', ');
+  qs('#journal-symbols').value = (item?.related_symbols || []).join(', ');
+  qs('#journal-body').value = item?.body || '';
+}
+
+function bindTabs() {
+  qs('#dashboard-tabs').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-tab]');
+    if (!button) return;
+    state.ui.activeTab = button.dataset.tab;
+    sessionStorage.setItem('dashboard-active-tab', state.ui.activeTab);
+    renderTabs();
+  });
+}
+
+function bindJournal() {
+  qs('#journal-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const id = qs('#journal-id').value;
+    const payload = {
+      id: id ? Number(id) : undefined,
+      entryDate: qs('#journal-date').value,
+      mood: qs('#journal-mood').value,
+      title: qs('#journal-title').value.trim(),
+      tags: parseCommaList(qs('#journal-tags').value),
+      relatedSymbols: parseCommaList(qs('#journal-symbols').value),
+      body: qs('#journal-body').value.trim(),
+    };
+    try {
+      if (id) {
+        await jsonRequest('/api/dashboard/journal', { method: 'PATCH', body: JSON.stringify(payload) });
+      } else {
+        await jsonRequest('/api/dashboard/journal', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      qs('#journal-form-status').textContent = '투자일기를 저장했어요.';
+      hydrateJournalForm();
+      await refreshDashboard();
+    } catch (error) {
+      qs('#journal-form-status').textContent = visibleError(error.message, '투자일기를 저장하지 못했어요.');
+    }
+  });
+
+  qs('#journal-reset').addEventListener('click', () => {
+    hydrateJournalForm();
+    qs('#journal-form-status').textContent = '';
+  });
+
+  qs('#journal-list').addEventListener('click', async (event) => {
+    const editButton = event.target.closest('.journal-edit-btn');
+    if (editButton) {
+      const item = (state.journals || []).find((journal) => String(journal.id) === editButton.dataset.id);
+      hydrateJournalForm(item);
+      state.ui.activeTab = 'journal';
+      renderTabs();
+      return;
+    }
+    const deleteButton = event.target.closest('.journal-delete-btn');
+    if (deleteButton) {
+      try {
+        await jsonRequest('/api/dashboard/journal', {
+          method: 'DELETE',
+          body: JSON.stringify({ id: Number(deleteButton.dataset.id) }),
+        });
+        await refreshDashboard();
+      } catch (error) {
+        qs('#journal-form-status').textContent = visibleError(error.message, '투자일기를 삭제하지 못했어요.');
+      }
+    }
+  });
+}
+
+function bindNotes() {
+  qs('#symbol-chip-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-symbol]');
+    if (!button) return;
+    selectSymbol(button.dataset.symbol);
+  });
+
+  qs('#asset-note-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const position = getSelectedPosition();
+    const payload = {
+      type: 'asset',
+      symbol: qs('#asset-symbol').value,
+      displayName: qs('#asset-display-name').value.trim(),
+      market: position?.market_type || null,
+      marketCode: position?.market_code || null,
+      tabKey: qs('#asset-tab-key').value,
+      role: qs('#asset-role').value.trim(),
+      whyBought: splitLines(qs('#asset-why-bought').value),
+      whySold: qs('#asset-why-sold').value.trim(),
+      reviewTriggers: splitLines(qs('#asset-review-triggers').value),
+      nextBestAction: qs('#asset-next-action').value.trim(),
+      memo: qs('#asset-memo').value.trim(),
+      sellPlan: getProfile(qs('#asset-symbol').value)?.sell_plan || {},
+    };
+    try {
+      await jsonRequest('/api/dashboard/notes', { method: 'PATCH', body: JSON.stringify(payload) });
+      qs('#asset-note-status').textContent = '종목노트를 저장했어요.';
+      await refreshDashboard();
+    } catch (error) {
+      qs('#asset-note-status').textContent = visibleError(error.message, '종목노트를 저장하지 못했어요.');
+    }
+  });
+
+  qs('#selected-trade-list').addEventListener('click', async (event) => {
+    const button = event.target.closest('.save-trade-note-btn');
+    if (!button) return;
+    const textarea = qs(`.trade-note-input[data-trade-id="${button.dataset.tradeId}"]`);
+    try {
+      await jsonRequest('/api/dashboard/notes', {
+        method: 'PATCH',
+        body: JSON.stringify({ type: 'trade', tradeId: button.dataset.tradeId, tradeNote: textarea.value.trim() }),
+      });
+      await refreshDashboard();
+    } catch (error) {
+      qs('#asset-note-status').textContent = visibleError(error.message, '거래 메모를 저장하지 못했어요.');
+    }
+  });
 }
 
 function bindAuth() {
@@ -260,12 +643,13 @@ function bindAuth() {
     const input = qs('#password-input').value;
     const result = await passwordApi('POST', { password: input });
     if (!result.ok || !result.authenticated) {
-      qs('#login-error').textContent = visibleError(result.error, '비밀번호가 맞지 않거나 서버 설정이 아직 안 끝났어.');
+      qs('#login-error').textContent = visibleError(result.error, '비밀번호가 맞지 않거나 서버 설정이 아직 안 끝났어요.');
       return;
     }
     qs('#login-error').textContent = '';
     state.auth.needsPasswordChange = !!result.needsPasswordChange;
     setSessionAuth(true);
+    await refreshDashboard();
     mountApp();
   });
 
@@ -274,16 +658,16 @@ function bindAuth() {
     const a = qs('#force-new-password').value;
     const b = qs('#force-confirm-password').value;
     if (a.length < 4) {
-      qs('#force-reset-error').textContent = '비밀번호는 최소 4자 이상으로 설정해줘.';
+      qs('#force-reset-error').textContent = '비밀번호는 최소 4자 이상으로 설정해줘요.';
       return;
     }
     if (a !== b) {
-      qs('#force-reset-error').textContent = '새 비밀번호가 서로 달라.';
+      qs('#force-reset-error').textContent = '새 비밀번호가 서로 달라요.';
       return;
     }
     const result = await passwordApi('PATCH', { currentPassword: '12345', nextPassword: a });
     if (!result.ok) {
-      qs('#force-reset-error').textContent = visibleError(result.error, '비밀번호 저장에 실패했어. Supabase 설정을 먼저 확인해야 해.');
+      qs('#force-reset-error').textContent = visibleError(result.error, '비밀번호 저장에 실패했어요.');
       return;
     }
     state.auth.needsPasswordChange = false;
@@ -303,39 +687,49 @@ function bindAuth() {
     const next = qs('#new-password').value;
     const confirm = qs('#confirm-password').value;
     if (next.length < 4) {
-      qs('#settings-error').textContent = '새 비밀번호는 최소 4자 이상이어야 해.';
+      qs('#settings-error').textContent = '새 비밀번호는 최소 4자 이상이어야 해요.';
       qs('#settings-success').textContent = '';
       return;
     }
     if (next !== confirm) {
-      qs('#settings-error').textContent = '새 비밀번호와 확인값이 달라.';
+      qs('#settings-error').textContent = '새 비밀번호와 확인값이 달라요.';
       qs('#settings-success').textContent = '';
       return;
     }
     const result = await passwordApi('PATCH', { currentPassword: current, nextPassword: next });
     if (!result.ok) {
-      qs('#settings-error').textContent = visibleError(result.error, '현재 비밀번호가 틀렸거나 Supabase 연결이 아직 완료되지 않았어.');
+      qs('#settings-error').textContent = visibleError(result.error, '현재 비밀번호가 틀렸거나 연결이 아직 완료되지 않았어요.');
       qs('#settings-success').textContent = '';
       return;
     }
     state.auth.needsPasswordChange = false;
     qs('#settings-error').textContent = '';
-    qs('#settings-success').textContent = '비밀번호를 변경했어.';
+    qs('#settings-success').textContent = '비밀번호를 변경했어요.';
     qsa('#settings-form input').forEach(el => el.value = '');
   });
 }
 
+function bindRefresh() {
+  qs('#refresh-dashboard').addEventListener('click', refreshDashboard);
+}
+
 (async function init() {
   bindAuth();
-  await loadData();
-  if (state.auth?.ok === false) {
-    show(qs('#auth-overlay'));
-    qs('#login-error').textContent = visibleError(state.auth.error, 'Supabase 인증 상태를 불러오지 못했어.');
-    return;
-  }
+  bindTabs();
+  bindJournal();
+  bindNotes();
+  bindRefresh();
+  hydrateJournalForm();
   if (isSessionAuthed()) {
-    mountApp();
-  } else {
-    show(qs('#auth-overlay'));
+    try {
+      const auth = await passwordApi('GET');
+      state.auth = auth || { needsPasswordChange: true };
+      await refreshDashboard();
+      mountApp();
+      return;
+    } catch {
+      setSessionAuth(false);
+    }
   }
+  show(qs('#auth-overlay'));
 })();

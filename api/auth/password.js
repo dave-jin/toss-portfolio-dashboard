@@ -1,5 +1,6 @@
 import { hashPassword, verifyPassword } from '../../lib/auth.js';
 import { assertSupabaseEnv, fetchPasswordConfig, upsertPasswordConfig } from '../../lib/supabase.js';
+import { clearSessionCookie, setSessionCookie } from '../../lib/session.js';
 
 function json(res, status, payload) {
   res.status(status).setHeader('Content-Type', 'application/json');
@@ -13,6 +14,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const row = await fetchPasswordConfig();
       if (!row) {
+        clearSessionCookie(res);
         return json(res, 200, { ok: true, exists: false, needsPasswordChange: true });
       }
       return json(res, 200, {
@@ -26,6 +28,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { password } = req.body || {};
       if (!password || typeof password !== 'string') {
+        clearSessionCookie(res);
         return json(res, 400, { ok: false, error: 'password_required' });
       }
       const row = await fetchPasswordConfig();
@@ -35,9 +38,15 @@ export default async function handler(req, res) {
           password_hash: hashPassword(password),
           password_changed: password !== '12345',
         });
+        setSessionCookie(res);
         return json(res, 200, { ok: true, authenticated: true, needsPasswordChange: !created.password_changed });
       }
       const matched = verifyPassword(password, row.password_hash);
+      if (!matched) {
+        clearSessionCookie(res);
+      } else {
+        setSessionCookie(res);
+      }
       return json(res, 200, {
         ok: true,
         authenticated: matched,
@@ -57,6 +66,7 @@ export default async function handler(req, res) {
           password_hash: hashPassword(nextPassword),
           password_changed: true,
         });
+        setSessionCookie(res);
         return json(res, 200, { ok: true, updated: true, updatedAt: created.updated_at });
       }
       const ok = verifyPassword(currentPassword || '', row.password_hash);
@@ -68,6 +78,7 @@ export default async function handler(req, res) {
         password_hash: hashPassword(nextPassword),
         password_changed: true,
       });
+      setSessionCookie(res);
       return json(res, 200, { ok: true, updated: true, updatedAt: updated.updated_at });
     }
 
