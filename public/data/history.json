@@ -690,5 +690,96 @@
         "daily_profit_loss": 137.1583
       }
     ]
+  },
+  {
+    "date": "2026-04-14T14:00:58+09:00",
+    "note": "자동 수집 스냅샷",
+    "summary": {
+      "total_asset": 3847223.0,
+      "profit": 357818.0,
+      "profit_rate": 0.1026
+    },
+    "positions": [
+      {
+        "symbol": "A000660",
+        "name": "SK하이닉스",
+        "market_value": 1118000,
+        "profit_rate": 0.2339,
+        "quantity": 1,
+        "current_price": 1118000,
+        "profit": 212000,
+        "daily_profit_loss": 78000
+      },
+      {
+        "symbol": "A069500",
+        "name": "KODEX 200",
+        "market_value": 1093860,
+        "profit_rate": 0.1066,
+        "quantity": 12,
+        "current_price": 91155,
+        "profit": 105455,
+        "daily_profit_loss": 39300
+      },
+      {
+        "symbol": "A005930",
+        "name": "삼성전자",
+        "market_value": 834000,
+        "profit_rate": 0.0121,
+        "quantity": 4,
+        "current_price": 208500,
+        "profit": 10000,
+        "daily_profit_loss": 30000
+      },
+      {
+        "symbol": "VOO",
+        "name": "VOO",
+        "market_value": 337743.377554,
+        "profit_rate": 0.043,
+        "quantity": 0.35926,
+        "current_price": 940108,
+        "profit": 13954.377554,
+        "daily_profit_loss": 165.9199
+      },
+      {
+        "symbol": "XLE",
+        "name": "XLE",
+        "market_value": 229053.922165,
+        "profit_rate": 0.0181,
+        "quantity": 2.703501,
+        "current_price": 84724,
+        "profit": 4079.922165,
+        "daily_profit_loss": -966.6421
+      },
+      {
+        "symbol": "A463250",
+        "name": "TIGER K방산&우주",
+        "market_value": 101900,
+        "profit_rate": 0.1633,
+        "quantity": 2,
+        "current_price": 50950,
+        "profit": 14310,
+        "daily_profit_loss": 500
+      },
+      {
+        "symbol": "A458730",
+        "name": "TIGER 미국배당다우존스",
+        "market_value": 101360,
+        "profit_rate": -0.0169,
+        "quantity": 7,
+        "current_price": 14480,
+        "profit": -1750,
+        "daily_profit_loss": null
+      },
+      {
+        "symbol": "GLD",
+        "name": "GLD",
+        "market_value": 28100.156235,
+        "profit_rate": -0.0428,
+        "quantity": 0.043021,
+        "current_price": 653173,
+        "profit": -1257.843765,
+        "daily_profit_loss": 196.7645
+      }
+    ]
   }
 ]
