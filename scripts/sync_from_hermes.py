@@ -439,6 +439,7 @@ def build_news_query(position, profile):
 
 def build_news_rows(latest, profile_rows, now_iso):
     rows = []
+    seen_urls = set()
     profile_map = {row['symbol']: row for row in profile_rows}
     for position in latest.get('positions', []):
         symbol = position.get('symbol')
@@ -448,8 +449,10 @@ def build_news_rows(latest, profile_rows, now_iso):
         query = build_news_query(position, profile)
         display_name = profile.get('display_name') or position.get('name') or symbol
         for item in fetch_google_news(query, limit=3):
-            if not item.get('url'):
+            url = item.get('url')
+            if not url or url in seen_urls:
                 continue
+            seen_urls.add(url)
             rows.append({
                 'symbol': symbol,
                 'display_name': display_name,
@@ -457,7 +460,7 @@ def build_news_rows(latest, profile_rows, now_iso):
                 'title': item.get('title') or display_name,
                 'summary': item.get('summary') or '',
                 'source': item.get('source') or 'Google News',
-                'url': item.get('url'),
+                'url': url,
                 'published_at': item.get('published_at'),
                 'raw': item.get('raw') or {},
                 'updated_at': now_iso,

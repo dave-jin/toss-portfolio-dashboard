@@ -23,18 +23,18 @@
     "base_info": null,
     "source": "KRX official data via k-skill-proxy"
   },
-  "A458730": {
-    "market": "KOSPI",
-    "market_code": "KSP",
-    "code": "458730",
-    "series": [],
-    "base_info": null,
-    "source": "KRX official data via k-skill-proxy"
-  },
   "A463250": {
     "market": "KOSPI",
     "market_code": "KSP",
     "code": "463250",
+    "series": [],
+    "base_info": null,
+    "source": "KRX official data via k-skill-proxy"
+  },
+  "A458730": {
+    "market": "KOSPI",
+    "market_code": "KSP",
+    "code": "458730",
     "series": [],
     "base_info": null,
     "source": "KRX official data via k-skill-proxy"
